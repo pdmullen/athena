@@ -20,6 +20,7 @@
 #include "../field/field.hpp"
 #include "../globals.hpp"
 #include "../hydro/hydro.hpp"
+#include "../particles/particles.hpp"
 #include "../utils/buffer_utils.hpp"
 #include "mesh.hpp"
 #include "mesh_refinement.hpp"
@@ -601,12 +602,14 @@ void Mesh::RedistributeAndRefineMeshBlocks(ParameterInput *pin, int ntot) {
           // fine to coarse on the same MPI rank (different AMR level) - restriction
           MeshBlock* pob = FindMeshBlock(on+ll);
           FillSameRankFineToCoarseAMR(pob, pmb, loclist[on+ll]);
+          if (PARTICLES) Particles::AMRFineToCoarse(pob, pmb);
         }
       } else if ((loclist[on].level < newloc[n].level) && // coarse to fine (c2f)
                  (ranklist[on] == Globals::my_rank)) {
         // coarse to fine on the same MPI rank (different AMR level) - prolongation
         MeshBlock* pob = FindMeshBlock(on);
         FillSameRankCoarseToFineAMR(pob, pmb, newloc[n]);
+        if (PARTICLES) Particles::AMRCoarseToFine(pob, pmb);
       }
     }
   }
@@ -687,6 +690,16 @@ void Mesh::RedistributeAndRefineMeshBlocks(ParameterInput *pin, int ntot) {
     pmb->pbval->SearchAndSetNeighbors(tree, ranklist, nslist);
     pmb = pmb->next;
   }
+
+  if (PARTICLES) {
+    // re-link the neighbors in Particles class
+    pmb = pblock;
+    while (pmb != nullptr) {
+      pmb->ppar->LinkNeighbors(tree, nrbx1, nrbx2, nrbx3, root_level);
+      pmb = pmb->next;
+    }
+  }
+
   Initialize(2, pin);
 
   ResetLoadBalanceVariables();

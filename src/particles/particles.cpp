@@ -51,6 +51,67 @@ MPI_Comm Particles::my_comm = MPI_COMM_NULL;
 static int CheckSide(int xi, int xi1, int xi2);
 
 //--------------------------------------------------------------------------------------
+//! \fn void Particles::AMRCoarseToFine(MeshBlock* pmbc, MeshBlock* pmbf)
+//  \brief load particles from a coarse meshblock to a fine meshblock.
+
+void Particles::AMRCoarseToFine(MeshBlock* pmbc, MeshBlock* pmbf) {
+  // Initialization
+  Particles *pparc = pmbc->ppar, *pparf = pmbf->ppar;
+  const Real x1min = pmbf->block_size.x1min, x1max = pmbf->block_size.x1max;
+  const Real x2min = pmbf->block_size.x2min, x2max = pmbf->block_size.x2max;
+  const Real x3min = pmbf->block_size.x3min, x3max = pmbf->block_size.x3max;
+  const bool active1 = pparc->active1_,
+             active2 = pparc->active2_,
+             active3 = pparc->active3_;
+  const AthenaArray<Real> &xp = pparc->xp, &yp = pparc->yp, &zp = pparc->zp;
+  const Coordinates *pcoord = pmbf->pcoord;
+
+  // Loop over particles in the coarse meshblock.
+  for (int k = 0; k < pparc->npar; ++k) {
+    Real x1, x2, x3;
+    pcoord->CartesianToMeshCoords(xp(k), yp(k), zp(k), x1, x2, x3);
+    if ((!active1 || (active1 && x1min <= x1 && x1 < x1max)) &&
+        (!active2 || (active2 && x2min <= x2 && x2 < x2max)) &&
+        (!active3 || (active3 && x3min <= x3 && x3 < x3max))) {
+      // Load a particle to the fine meshblock.
+      int npar = pparf->npar;
+      if (npar >= pparf->nparmax) pparf->UpdateCapacity(2 * pparf->nparmax);
+      for (int j = 0; j < nint; ++j)
+        pparf->intprop(j,npar) = pparc->intprop(j,k);
+      for (int j = 0; j < nreal; ++j)
+        pparf->realprop(j,npar) = pparc->realprop(j,k);
+      for (int j = 0; j < naux; ++j)
+        pparf->auxprop(j,npar) = pparc->auxprop(j,k);
+      ++pparf->npar;
+    }
+  }
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn void Particles::AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc)
+//  \brief load particles from a fine meshblock to a coarse meshblock.
+
+void Particles::AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc) {
+  // Check the capacity.
+  Particles *pparf = pmbf->ppar, *pparc = pmbc->ppar;
+  int nparf = pparf->npar, nparc = pparc->npar;
+  int npar_new = nparf + nparc;
+  if (npar_new > pparc->nparmax) pparc->UpdateCapacity(npar_new);
+
+  // Load the particles.
+  for (int j = 0; j < nint; ++j)
+    for (int k = 0; k < nparf; ++k)
+      pparc->intprop(j,nparc+k) = pparf->intprop(j,k);
+  for (int j = 0; j < nreal; ++j)
+    for (int k = 0; k < nparf; ++k)
+      pparc->realprop(j,nparc+k) = pparf->realprop(j,k);
+  for (int j = 0; j < naux; ++j)
+    for (int k = 0; k < nparf; ++k)
+      pparc->auxprop(j,nparc+k) = pparf->auxprop(j,k);
+  pparc->npar = npar_new;
+}
+
+//--------------------------------------------------------------------------------------
 //! \fn Particles::Initialize(Mesh *pm, ParameterInput *pin)
 //  \brief initializes the class.
 

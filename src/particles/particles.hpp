@@ -50,6 +50,8 @@ friend class ParticleMesh;
 
  public:
   // Class methods
+  static void AMRCoarseToFine(MeshBlock* pmbc, MeshBlock* pmbf);
+  static void AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc);
   static void Initialize(Mesh *pm, ParameterInput *pin);
   static void PostInitialize(Mesh *pm, ParameterInput *pin);
   static void FindHistoryOutput(Mesh *pm, Real data_sum[], int pos);
