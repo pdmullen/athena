@@ -358,7 +358,6 @@ Particles::Particles(MeshBlock *pmb, ParameterInput *pin) {
 
   // Initiate ParticleBuffer class.
   ParticleBuffer::SetNumberOfProperties(nint, nreal + naux);
-  ClearBoundary();
 }
 
 //--------------------------------------------------------------------------------------
@@ -497,6 +496,9 @@ void Particles::LinkNeighbors(MeshBlockTree &tree,
   // Initiate ParticleMesh boundary data.
   ppm->SetBoundaryAttributes();
   ppm->InitiateBoundaryData();
+
+  // Initiate boundary values.
+  ClearBoundary();
 }
 
 //--------------------------------------------------------------------------------------
