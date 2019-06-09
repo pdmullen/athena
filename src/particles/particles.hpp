@@ -71,6 +71,7 @@ friend class ParticleMesh;
 
   // Instance methods
   void ClearBoundary();
+  void ClearNeighbors();
   void Integrate(int step);
   void LinkNeighbors(MeshBlockTree &tree, int64_t nrbx1, int64_t nrbx2, int64_t nrbx3,
                      int root_level);

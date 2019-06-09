@@ -377,6 +377,9 @@ Particles::~Particles() {
   // Delete working arrays.
   if (nwork > 0) work.DeleteAthenaArray();
 
+  // Clear links to neighbors.
+  ClearNeighbors();
+
   // Delete mesh auxiliaries.
   delete ppm;
 }
@@ -399,6 +402,28 @@ void Particles::ClearBoundary() {
   }
 
   ppm->ClearBoundary();
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn void Particles::ClearNeighbors()
+//  \brief clears links to neighbors.
+
+void Particles::ClearNeighbors() {
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j)
+      for (int k = 0; k < 3; ++k) {
+        Neighbor *pn = &neighbor_[i][j][k];
+        if (pn == NULL) continue;
+        while (pn->next != NULL)
+          pn = pn->next;
+        while (pn->prev != NULL) {
+          pn = pn->prev;
+          delete pn->next;
+          pn->next = NULL;
+        }
+        pn->pnb = NULL;
+        pn->pmb = NULL;
+      }
 }
 
 //--------------------------------------------------------------------------------------
