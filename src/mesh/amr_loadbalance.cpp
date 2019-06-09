@@ -695,6 +695,7 @@ void Mesh::RedistributeAndRefineMeshBlocks(ParameterInput *pin, int ntot) {
     // re-link the neighbors in Particles class
     pmb = pblock;
     while (pmb != nullptr) {
+      pmb->ppar->ClearNeighbors();
       pmb->ppar->LinkNeighbors(tree, nrbx1, nrbx2, nrbx3, root_level);
       pmb = pmb->next;
     }
