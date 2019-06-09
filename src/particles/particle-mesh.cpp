@@ -135,6 +135,19 @@ ParticleMesh::~ParticleMesh() {
 }
 
 //--------------------------------------------------------------------------------------
+//! \fn Real ParticleMesh::FindMaximumWeight()
+//  \brief returns the maximum weight in the meshblock.
+
+Real ParticleMesh::FindMaximumWeight() const {
+  Real wmax = 0.0;
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i)
+        wmax = std::max(wmax, weight(k,j,i));
+  return wmax;
+}
+
+//--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::InterpolateMeshToParticles(
 //               const AthenaArray<Real>& meshsrc, int ms1,
 //               AthenaArray<Real>& par, int p1, int nprop)
@@ -402,6 +415,7 @@ void ParticleMesh::InitiateBoundaryData() {
     NeighborBlock& nb = pbval_->neighbor[n];
     BoundaryAttributes& ba = ba_[n];
 
+    if (bd_.recv[nb.bufid] != NULL) delete [] bd_.recv[nb.bufid];
     int nrecv = (ba.ire - ba.irs + 1) *
                 (ba.jre - ba.jrs + 1) *
                 (ba.kre - ba.krs + 1) * nmeshaux;

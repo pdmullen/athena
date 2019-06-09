@@ -69,6 +69,9 @@ friend class ParticleMesh;
   // Destructor
   virtual ~Particles();
 
+  // Accessor
+  Real GetMaximumWeight() const;
+
   // Instance methods
   void ClearBoundary();
   void ClearNeighbors();
@@ -189,6 +192,14 @@ friend class ParticleMesh;
   ParticleBuffer send_[56];  // particle send buffers
 #endif
 };
+
+//--------------------------------------------------------------------------------------
+//! \fn Real Particles::GetMaximumWeight()
+//  \brief returns the maximum weight on the mesh.
+
+inline Real Particles::GetMaximumWeight() const {
+  return ppm->FindMaximumWeight();
+}
 
 //--------------------------------------------------------------------------------------
 //! \class DustParticles

@@ -50,6 +50,9 @@ friend class OutputType;
   explicit ParticleMesh(Particles *ppar);
   ~ParticleMesh();
 
+  // Accessor
+  Real FindMaximumWeight() const;
+
  protected:
   // Class variables
   static int nmeshaux;  // number of auxiliaries to the meshblock
