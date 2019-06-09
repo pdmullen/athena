@@ -450,6 +450,7 @@ void Particles::LinkNeighbors(MeshBlockTree &tree,
       pn = pn->next;
     if (pn->pnb != NULL) {
       pn->next = new Neighbor;
+      pn->next->prev = pn;
       pn = pn->next;
     }
     pn->pnb = &nb;

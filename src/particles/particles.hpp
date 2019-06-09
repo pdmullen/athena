@@ -34,9 +34,9 @@ class ParameterInput;
 struct Neighbor {
   NeighborBlock *pnb;
   MeshBlock *pmb;
-  Neighbor *next;
+  Neighbor *next, *prev;
 
-  Neighbor() : pnb(NULL), pmb(NULL), next(NULL) {}
+  Neighbor() : pnb(NULL), pmb(NULL), next(NULL), prev(NULL) {}
 };
 
 //--------------------------------------------------------------------------------------
