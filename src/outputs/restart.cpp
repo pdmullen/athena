@@ -83,7 +83,6 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
   // the size of an element of the ID and cost list
   listsize = sizeof(LogicalLocation)+sizeof(double);
   // the size of each MeshBlock
-  datasize = pm->pblock->GetBlockSizeInBytes();
   int nbtotal = pm->nbtotal;
   int myns = pm->nslist[Globals::my_rank];
   int mynb = pm->nblist[Globals::my_rank];
@@ -113,7 +112,6 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
     resfile.Write(&(pm->time), sizeof(Real), 1);
     resfile.Write(&(pm->dt), sizeof(Real), 1);
     resfile.Write(&(pm->ncycle), sizeof(int), 1);
-    resfile.Write(&(datasize), sizeof(IOWrapperSizeT), 1);
 
     // collect and write user Mesh data
     if (udsize != 0) {
@@ -146,7 +144,7 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
     std::memcpy(&(mbmetadata[os]), &(pmb->loc), sizeof(LogicalLocation));
     os += sizeof(LogicalLocation);
     std::memcpy(&(mbmetadata[os]), &(pmb->cost_), sizeof(double));
-    os += sizeof(Real);
+    os += sizeof(double);
     std::memcpy(&(mbmetadata[os]), &(sizelist[pmb->gid]), sizeof(IOWrapperSizeT));
     os += sizeof(IOWrapperSizeT);
     pmb = pmb->next;
@@ -159,12 +157,12 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
   delete [] mbmetadata;
 
   // calculate the size and offset for this rank
-  IOWrapperSizeT mysize=0;
-  for (int n=myns; n<myns+mynb; n++)
-    mysize += sizelist[n];
   myoffset = headeroffset+mdsize*nbtotal;
   for (int n=0; n<myns; n++)
     myoffset += sizelist[n];
+  IOWrapperSizeT mysize=0;
+  for (int n=myns; n<myns+mynb; n++)
+    mysize += sizelist[n];
 
   delete [] sizelist;
 
@@ -233,7 +231,7 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
   }
 
   // now write restart data in parallel
-  resfile.Write_at_all(data, datasize, mynb, myoffset);
+  resfile.Write_at_all(data, mysize, 1, myoffset);
   resfile.Close();
   delete [] data;
 }

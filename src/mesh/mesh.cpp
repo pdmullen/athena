@@ -561,7 +561,7 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
   RegionSize block_size;
   BoundaryFlag block_bcs[6];
   MeshBlock *pfirst{};
-  IOWrapperSizeT mdsize, datasize, headeroffset;
+  IOWrapperSizeT mdsize, headeroffset;
 
   // mesh test
   if (mesh_test > 0) Globals::nranks = mesh_test;
@@ -612,8 +612,6 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
   hdos += sizeof(Real);
   std::memcpy(&ncycle, &(headerdata[hdos]), sizeof(int));
   hdos += sizeof(int);
-  std::memcpy(&datasize, &(headerdata[hdos]), sizeof(IOWrapperSizeT));
-  hdos += sizeof(IOWrapperSizeT);   // (this updated value is never used)
 
   delete [] headerdata;
 
@@ -685,7 +683,7 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
     udsize += ruser_mesh_data[n].GetSizeInBytes();
   if (udsize != 0) {
     char *userdata = new char[udsize];
-    if (Globals::my_rank == 0) { // only the master process reads the ID list
+    if (Globals::my_rank == 0) { // only the master process reads the user data
       if (resfile.Read(userdata, 1, udsize) != udsize) {
         msg << "### FATAL ERROR in Mesh constructor" << std::endl
             << "The restart file is broken." << std::endl;
@@ -693,7 +691,7 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
       }
     }
 #ifdef MPI_PARALLEL
-    // then broadcast the ID list
+    // then broadcast the user data
     MPI_Bcast(userdata, udsize, MPI_BYTE, 0, MPI_COMM_WORLD);
 #endif
 
@@ -732,7 +730,7 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
     std::memcpy(&(loclist[i]), &(mbmetadata[os]), sizeof(LogicalLocation));
     os += sizeof(LogicalLocation);
     std::memcpy(&(costlist[i]), &(mbmetadata[os]), sizeof(double));
-    os += sizeof(Real);
+    os += sizeof(double);
     std::memcpy(&(sizelist[i]), &(mbmetadata[os]), sizeof(IOWrapperSizeT));
     os += sizeof(IOWrapperSizeT);
     if (loclist[i].level > current_level) current_level=loclist[i].level;
@@ -810,10 +808,10 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
   int nbs = nslist[Globals::my_rank];
   int nbe = nbs + nb - 1;
   IOWrapperSizeT mysize = 0, myoffset = headeroffset;
-  for (int n=nbs; n<=nbe; n++)
-    mysize += sizelist[n];
   for (int n=0; n<nbs; n++)
     myoffset += sizelist[n];
+  for (int n=nbs; n<=nbe; n++)
+    mysize += sizelist[n];
   char *mbdata = new char[mysize];
 
   // load MeshBlocks (parallel)
@@ -842,12 +840,13 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
   }
   pblock = pfirst;
   delete [] mbdata;
+  delete [] sizelist;
 
   ResetLoadBalanceVariables();
 
   // Initialize neighbor lists in Particle class.
   if (PARTICLES) {
-    MeshBlock *pmb = pfirst;
+    MeshBlock *pmb = pblock;
     while (pmb != NULL) {
       pmb->ppar->LinkNeighbors(tree, nrbx1, nrbx2, nrbx3, root_level);
       pmb = pmb->next;
