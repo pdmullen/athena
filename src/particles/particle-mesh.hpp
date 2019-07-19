@@ -93,6 +93,7 @@ friend class OutputType;
 
   // Class variables
   static bool initialized_;
+  static bool assigned_;     // flagging if the mesh is being assigned
 
   // Instance Variables
   bool active1_, active2_, active3_;  // active dimensions
