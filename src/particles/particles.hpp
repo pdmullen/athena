@@ -226,16 +226,16 @@ friend class MeshBlock;
   // Instance method
   Real NewBlockTimeStep();
 
- protected:
+ private:
+  // Class variables
+  static bool initialized;   // whether or not the class is initialized
+
+  static int iwx, iwy, iwz;        // indices for working arrays
+  static int idpx1, idpx2, idpx3;  // indices for momentum change
+
   static bool backreaction;  // on/off of back reaction
   static Real mass;          // mass of each particle
   static Real taus;          // stopping time (in code units)
-
- private:
-  // Class variables
-  static bool initialized;         // whether or not the class is initialized
-  static int iwx, iwy, iwz;        // indices for working arrays
-  static int idpx1, idpx2, idpx3;  // indices for momentum change
 
   // Instance methods.
   void AssignShorthands();
