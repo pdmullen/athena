@@ -58,6 +58,14 @@ void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
 }
 
 //--------------------------------------------------------------------------------------
+//! \fn void DustParticles::SetOneParticleMass(Real new_mass)
+//  \brief sets the mass of each particle.
+
+void DustParticles::SetOneParticleMass(Real new_mass) {
+  pinput->SetReal("particles", "mass", mass = new_mass);
+}
+
+//--------------------------------------------------------------------------------------
 //! \fn DustParticles::DustParticles(MeshBlock *pmb, ParameterInput *pin)
 //  \brief constructs a DustParticles instance.
 

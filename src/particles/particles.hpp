@@ -250,14 +250,6 @@ friend class MeshBlock;
 };
 
 //--------------------------------------------------------------------------------------
-//! \fn void DustParticles::SetOneParticleMass(Real new_mass)
-//  \brief sets the mass of each particle.
-
-inline void DustParticles::SetOneParticleMass(Real new_mass) {
-  mass = new_mass;
-}
-
-//--------------------------------------------------------------------------------------
 //! \fn bool DustParticles::GetBackReaction()
 //  \brief returns if the back reaction of the drag is on or off.
 
