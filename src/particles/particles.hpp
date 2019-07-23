@@ -16,6 +16,7 @@
 #include "../athena_arrays.hpp"
 #include "../mesh/mesh.hpp"
 #include "../outputs/outputs.hpp"
+#include "../parameter_input.hpp"
 #include "particle_buffer.hpp"
 #include "particle-mesh.hpp"
 
@@ -23,9 +24,6 @@
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif
-
-// Forward declarations
-class ParameterInput;
 
 //--------------------------------------------------------------------------------------
 //! \struct Neighbor
@@ -117,6 +115,8 @@ friend class ParticleMesh;
                                    // (only used for outputs)
 
   static Real cfl_par;  // CFL number for particles
+
+  static ParameterInput *pinput;
 
   // Instance methods
   virtual void AssignShorthands();  // Needs to be called everytime

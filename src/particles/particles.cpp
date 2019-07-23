@@ -43,6 +43,7 @@ int Particles::ivpx0 = -1, Particles::ivpy0 = -1, Particles::ivpz0 = -1;
 int Particles::ixi1 = -1, Particles::ixi2 = -1, Particles::ixi3 = -1;
 int Particles::imvpx = -1, Particles::imvpy = -1, Particles::imvpz = -1;
 Real Particles::cfl_par = 1;
+ParameterInput* Particles::pinput = NULL;
 #ifdef MPI_PARALLEL
 MPI_Comm Particles::my_comm = MPI_COMM_NULL;
 #endif
@@ -154,6 +155,9 @@ void Particles::Initialize(Mesh *pm, ParameterInput *pin) {
 
   // Get the CFL number for particles.
   cfl_par = pin->GetOrAddReal("particles", "cfl_par", pm->cfl_number);
+
+  // Remember the pointer to input parameters.
+  pinput = pin;
 
 #ifdef MPI_PARALLEL
   // Get my MPI communicator.
