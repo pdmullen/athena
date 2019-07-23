@@ -87,7 +87,7 @@ friend class ParticleMesh;
   bool ReceiveParticleMesh(int step);
   Real NewBlockTimeStep();
 
-  size_t GetSizeInBytes();
+  std::size_t GetSizeInBytes();
   void UnpackParticlesForRestart(char *mbdata, std::size_t &os);
   void PackParticlesForRestart(char *&pdata);
 

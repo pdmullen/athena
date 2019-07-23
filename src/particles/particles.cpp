@@ -1148,7 +1148,7 @@ Real Particles::NewBlockTimeStep() {
 }
 
 //--------------------------------------------------------------------------------------
-//! \fn Particles::GetSizeInBytes()
+//! \fn std::size_t Particles::GetSizeInBytes()
 //  \brief returns the data size in bytes in the meshblock.
 
 std::size_t Particles::GetSizeInBytes() {
