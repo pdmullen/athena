@@ -369,6 +369,9 @@ class Cylindrical : public Coordinates {
   void MeshCoordsToCartesianVector(
       Real x1, Real x2, Real x3, Real vx1, Real vx2, Real vx3,
       Real& vx, Real& vy, Real& vz) const;
+
+ private:
+  Real x2ref;
 };
 
 //----------------------------------------------------------------------------------------
@@ -437,6 +440,9 @@ class SphericalPolar : public Coordinates {
   void MeshCoordsToCartesianVector(
       Real x1, Real x2, Real x3, Real vx1, Real vx2, Real vx3,
       Real& vx, Real& vy, Real& vz) const;
+
+ private:
+  Real x3ref;
 };
 
 //----------------------------------------------------------------------------------------

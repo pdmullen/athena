@@ -148,6 +148,10 @@ Cylindrical::Cylindrical(MeshBlock *pmb, ParameterInput *pin, bool flag)
       coord_area3vc_i_(i)= 0.5*(SQR(x1v(i+1)) - SQR(x1v(i)));
     }
   }
+
+  // Initialize the reference angle needed for CartesianToMeshCoords().
+  const RegionSize& block_size = pmy_block->block_size;
+  x2ref = 0.5 * (block_size.x2min + block_size.x2max) - M_PI;
 }
 
 
@@ -329,9 +333,13 @@ void Cylindrical::AddCoordTermsDivergence(
 
 void Cylindrical::CartesianToMeshCoords(
     Real x, Real y, Real z, Real& x1, Real& x2, Real& x3) const {
+  // Make the coordinate transform.
   x1 = std::sqrt(x * x + y * y);
   x2 = std::atan2(y, x);
   x3 = z;
+
+  // Project the azimuthal angle to the domain of the meshblock.
+  x2 -= TWO_PI * std::floor((x2 - x2ref) / TWO_PI);
 }
 
 //--------------------------------------------------------------------------------------

@@ -245,6 +245,9 @@ SphericalPolar::SphericalPolar(MeshBlock *pmb, ParameterInput *pin, bool flag)
       coord_area2_j_(jl+1) = sp;
     }
   }
+
+  // Initialize the reference angle needed for CartesianToMeshCoords().
+  x3ref = 0.5 * (block_size.x3min + block_size.x3max) - M_PI;
 }
 
 
@@ -524,9 +527,13 @@ void SphericalPolar::AddCoordTermsDivergence(const Real dt, const AthenaArray<Re
 
 void SphericalPolar::CartesianToMeshCoords(
     Real x, Real y, Real z, Real& x1, Real& x2, Real& x3) const {
+  // Make the coordinate transform.
   x1 = std::sqrt(x * x + y * y + z * z);
   x2 = std::acos(z / x1);
   x3 = std::atan2(y, x);
+
+  // Project the azimuthal angle to the domain of the meshblock.
+  x3 -= TWO_PI * std::floor((x3 - x3ref) / TWO_PI);
 }
 
 //--------------------------------------------------------------------------------------
