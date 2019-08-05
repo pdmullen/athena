@@ -22,7 +22,6 @@
 
 // Class variable initialization
 bool ParticleMesh::initialized_ = false;
-bool ParticleMesh::assigned_ = false;
 int ParticleMesh::nmeshaux = 0;
 int ParticleMesh::iweight = -1;
 #ifdef MPI_PARALLEL
@@ -203,9 +202,6 @@ void ParticleMesh::InterpolateMeshToParticles(
 
 void ParticleMesh::AssignParticlesToMeshAux(
          const AthenaArray<Real>& par, int p1, int ma1, int nprop) {
-  // Flag that the mesh is being assigned.
-  assigned_ = true;
-
   // Zero out meshaux.
 #pragma ivdep
   std::fill(&weight(0,0,0), &weight(0,0,0) + ncells_, 0.0);
@@ -269,9 +265,6 @@ void ParticleMesh::InterpolateMeshAndAssignParticles(
          const AthenaArray<Real>& meshsrc, int ms1,
          AthenaArray<Real>& pardst, int pd1, int ni,
          const AthenaArray<Real>& parsrc, int ps1, int ma1, int na) {
-  // Flag that the mesh is being assigned.
-  assigned_ = true;
-
   // Zero out meshaux.
 #pragma ivdep
   std::fill(&weight(0,0,0), &weight(0,0,0) + ncells_, 0.0);
@@ -810,14 +803,6 @@ void ParticleMesh::AssignParticlesToDifferentLevels(
     }
     delete [] pbuf;
     delete [] buf;
-
-    // Set the boundary flag.
-    if (snb.rank == Globals::my_rank)
-      pnbd->flag[nb.targetid] = BoundaryStatus::arrived;
-#ifdef MPI_PARALLEL
-    else
-      MPI_Start(&bd_.req_send[nb.bufid]);
-#endif
   }
 }
 
@@ -866,7 +851,6 @@ void ParticleMesh::ClearBoundary() {
 //  \brief Send boundary values to neighboring blocks.
 
 void ParticleMesh::SendBoundary() {
-  if (!assigned_) return;
   const int mylevel = pmb_->loc.level;
 
   for (int n = 0; n < pbval_->nneighbor; n++) {
@@ -874,17 +858,17 @@ void ParticleMesh::SendBoundary() {
     SimpleNeighborBlock& snb = nb.snb;
 
     // Load boundary values.
-    if (snb.level == mylevel) {
-      if (snb.rank == Globals::my_rank) {
-        BoundaryData<> *pnbd = &(pmesh_->FindMeshBlock(snb.gid)->ppar->ppm->bd_);
+    if (snb.rank == Globals::my_rank) {
+      BoundaryData<> *pnbd = &(pmesh_->FindMeshBlock(snb.gid)->ppar->ppm->bd_);
+      if (snb.level == mylevel)
         LoadBoundaryBufferSameLevel(pnbd->recv[nb.targetid], ba_[n]);
-        pnbd->flag[nb.targetid] = BoundaryStatus::arrived;
-      } else {
+      pnbd->flag[nb.targetid] = BoundaryStatus::arrived;
+    } else {
 #ifdef MPI_PARALLEL
+      if (snb.level == mylevel)
         LoadBoundaryBufferSameLevel(bd_.send[nb.bufid], ba_[n]);
-        MPI_Start(&bd_.req_send[nb.bufid]);
+      MPI_Start(&bd_.req_send[nb.bufid]);
 #endif
-      }
     }
   }
 }
@@ -894,7 +878,6 @@ void ParticleMesh::SendBoundary() {
 //  \brief starts receiving meshaux near boundary from neighbor processes.
 
 void ParticleMesh::StartReceiving() {
-  assigned_ = false;
 #ifdef MPI_PARALLEL
   for (int n = 0; n < pbval_->nneighbor; n++) {
     NeighborBlock& nb = pbval_->neighbor[n];
@@ -912,7 +895,6 @@ void ParticleMesh::StartReceiving() {
 #include <iomanip>
 
 bool ParticleMesh::ReceiveBoundary() {
-  if (!assigned_) return true;
   bool completed = true;
 
   for (int n = 0; n < pbval_->nneighbor; n++) {
