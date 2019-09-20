@@ -56,8 +56,8 @@ void DustParticles::UserSourceTerms(Real t, Real dt, const AthenaArray<Real>& me
   // Apply the Coriolis and centrifugal forces, and linear gravity from the star.
   Real cx = dt * two_omega, cz = dt * omega_half;
   for (int k = 0; k < npar; ++k) {
-    vpx(k) += cx * wz(k);
-    vpz(k) -= cz * wx(k);
+    vpx(k) += cx * vpz0(k);
+    vpz(k) -= cz * vpx0(k);
   }
 }
 
