@@ -152,7 +152,8 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
   const Coordinates *pc = pmy_block->pcoord;
   for (int k = 0; k < npar; ++k) {
     Real x1, x2, x3;
-    pc->CartesianToMeshCoords(xp(k), yp(k), zp(k), x1, x2, x3);
+    // TODO(ccyang): using (xp0, yp0, zp0) is a temporary hack.
+    pc->CartesianToMeshCoords(xp0(k), yp0(k), zp0(k), x1, x2, x3);
     pc->MeshCoordsToCartesianVector(x1, x2, x3, wx(k), wy(k), wz(k), wx(k), wy(k), wz(k));
   }
 
@@ -204,7 +205,8 @@ void DustParticles::ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& mes
   // Transform the momentum change in mesh coordinates.
   const Coordinates *pc = pmy_block->pcoord;
   for (int k = 0; k < npar; ++k)
-    pc->CartesianToMeshCoordsVector(xp(k), yp(k), zp(k),
+    // TODO(ccyang): using (xp0, yp0, zp0) is a temporary hack.
+    pc->CartesianToMeshCoordsVector(xp0(k), yp0(k), zp0(k),
         mass * wx(k), mass * wy(k), mass * wz(k), wx(k), wy(k), wz(k));
 
   // Assign the momentum change onto mesh.
