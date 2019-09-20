@@ -83,8 +83,14 @@ def run(**kwargs):
             athena.run('hydro/athinput.linear_wave2d', arguments)
 
 
+# formatting rules for numpy arrays of floats:
+error_formatter = lambda x: "{:.2e}".format(x)
+rate_formatter = lambda x: "{:.2f}".format(x)
+
+
 # Analyze outputs
 def analyze():
+    analyze_status = True
     # read data from error file
     filename = 'bin/linearwave-errors.dat'
     data = athena_read.error_dat(filename)
@@ -94,10 +100,18 @@ def analyze():
         solver_results = np.array(data[0:nrows_per_solver])
         data = np.delete(data, np.s_[0:nrows_per_solver], 0)
 
-        logger.info("%g %g", err_tol[0], err_tol[1])
         # Compute error convergence rates with Richardson extrapolation for each wave flag
         # --------------------
-        logger.info('{} + {}'.format(torder.upper(), xorder))
+        logger.info('------------------------------')
+        logger.info('{} + time/xorder={}'.format(torder.upper(), xorder))
+        logger.info('------------------------------')
+        logger.info('Solver sound/entropy wave error tolerances at each resolution:')
+        logger.info('nx1=' + repr(resolution_range[1:]))
+        with np.printoptions(formatter={'float_kind': error_formatter}):
+            logger.info(err_tol)
+        logger.info('Sound/entropy wave convergence rate tolerances (at nx1=128)')
+        with np.printoptions(formatter={'float_kind': rate_formatter}):
+            logger.info(rate_tol)
         # L-going sound wave
         logger.info("Sound wave error convergence:")
         logger.info("nx1   |   rate   |   RMS-L1")
@@ -112,12 +126,12 @@ def analyze():
                 logger.warning(
                     "L-going sound wave converging at rate {} slower than {}".format(
                         rate, rate_tol[0]))
-                return False
+                analyze_status = False
             if (rms_errs[i] > err_tol[0][i-1]):
                 logger.warning(
                     "L-going sound wave error {} is larger than tolerance {}".format(
                         rms_errs[i], err_tol[0][i-1]))
-                return False
+                analyze_status = False
 
         # L-going entropy wave
         logger.warning("Entropy wave error convergence:")
@@ -133,12 +147,12 @@ def analyze():
                 logger.warning(
                     "L-going entropy wave converging at rate {} slower than {}".format(
                         rate, rate_tol[1]))
-                return False
+                analyze_status = False
             if (rms_errs[i] > err_tol[1][i-1]):
                 logger.warning(
                     "L-going entropy wave error {} is larger than tolerance {}".format(
                         rms_errs[i], err_tol[1][i-1]))
-                return False
+                analyze_status = False
 
         # logger.info(solver_results[-2, 4] - solver_results[-1, 4])
         # logger.info(solver_results[-2, 4], solver_results[-1, 4])
@@ -150,7 +164,7 @@ def analyze():
             msg = "L/R-going sound wave errors, {} and {}"
             msg += ", have a difference that is not close to round-off"
             logger.warning(msg.format(solver_results[-2, 4], solver_results[-1, 4]))
-            return False
+            analyze_status = False
         # Unlike comparison for VL2+PLM, the errors become small enough in the high-order
         # solver that round-off needs to be accounted for. Assuming true solution A is
         # O(1), then the difference betwee L/R-going RMS-L1 errors approach:
@@ -158,4 +172,4 @@ def analyze():
 
         # Currently, RK2 + 3c produces the largest directional asymmetry w/
         # diff=-2.22e-14. Characteristic projection procedure may be introducing asymmetry
-    return True
+    return analyze_status

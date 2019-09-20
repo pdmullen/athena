@@ -201,7 +201,7 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
     if (PARTICLES) pmb->ppar->PackParticlesForRestart(pdata);
 
     // (conserved variable) Passive scalars:
-    for (int n=0; n<NSCALARS; n++) {
+    if (NSCALARS > 0) {
       AthenaArray<Real> &s = pmb->pscalars->s;
       std::memcpy(pdata, s.data(), s.GetSizeInBytes());
       pdata += s.GetSizeInBytes();
