@@ -21,7 +21,7 @@ int DustParticles::iwx = -1, DustParticles::iwy = -1, DustParticles::iwz = -1;
 int DustParticles::idpx1 = -1, DustParticles::idpx2 = -1, DustParticles::idpx3 = -1;
 
 bool DustParticles::backreaction = false;
-Real DustParticles::mass = 1.0, DustParticles::taus = 0.0;
+Real DustParticles::mass = 1.0, DustParticles::taus0 = 0.0;
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::Initialize(Mesh *pm, ParameterInput *pin)
@@ -41,11 +41,11 @@ void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
     mass = pin->GetOrAddReal("particles", "mass", 1.0);
 
     // Define stopping time.
-    taus = pin->GetOrAddReal("particles", "taus", 0.0);
+    taus0 = pin->GetOrAddReal("particles", "taus0", taus0);
 
     // Turn on/off back reaction.
     backreaction = pin->GetOrAddBoolean("particles", "backreaction", false);
-    if (taus == 0.0) backreaction = false;
+    if (taus0 == 0.0) backreaction = false;
 
     if (backreaction) {
       idpx1 = imvpx;
@@ -106,7 +106,7 @@ Real DustParticles::NewBlockTimeStep() {
   Real dt = Particles::NewBlockTimeStep();
 
   // Nothing to do for tracer particles.
-  if (taus <= 0.0) return dt;
+  if (taus0 <= 0.0) return dt;
 
   Real epsmax = 0;
   if (backreaction) {
@@ -126,7 +126,7 @@ Real DustParticles::NewBlockTimeStep() {
   }
 
   // Return the drag timescale.
-  return std::min(dt, static_cast<Real>(cfl_par * taus / (1.0 + epsmax)));
+  return std::min(dt, static_cast<Real>(cfl_par * taus0 / (1.0 + epsmax)));
 }
 
 //--------------------------------------------------------------------------------------
@@ -157,9 +157,9 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
     pc->MeshCoordsToCartesianVector(x1, x2, x3, wx(k), wy(k), wz(k), wx(k), wy(k), wz(k));
   }
 
-  if (taus > 0.0) {
+  if (taus0 > 0.0) {
     // Add drag force to particles.
-    Real c = dt / taus;
+    Real c = dt / taus0;
     for (int k = 0; k < npar; ++k) {
       // TODO(ccyang): This is a temporary hack; to be fixed.
       Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
@@ -174,7 +174,7 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
       vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
       //
     }
-  } else if (taus == 0.0) {
+  } else if (taus0 == 0.0) {
     // Instantaneously align the velocity of the particle to that of the gas.
     for (int k = 0; k < npar; ++k) {
       vpx(k) = wx(k);

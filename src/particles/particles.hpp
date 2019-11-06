@@ -235,7 +235,7 @@ friend class MeshBlock;
 
   static bool backreaction;  // on/off of back reaction
   static Real mass;          // mass of each particle
-  static Real taus;          // stopping time (in code units)
+  static Real taus0;         // constant/default stopping time (in code units)
 
   // Instance methods.
   void AssignShorthands();
@@ -271,7 +271,7 @@ inline Real DustParticles::GetOneParticleMass() {
 //  \brief returns the stopping time of the drag.
 
 inline Real DustParticles::GetStoppingTime() {
-  return taus;
+  return taus0;
 }
 
 #endif  // PARTICLES_PARTICLES_HPP_
