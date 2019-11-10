@@ -17,10 +17,13 @@
 
 // Class variable initialization
 bool DustParticles::initialized = false;
+bool DustParticles::backreaction = false;
+bool DustParticles::variable_taus = false;
+
 int DustParticles::iwx = -1, DustParticles::iwy = -1, DustParticles::iwz = -1;
 int DustParticles::idpx1 = -1, DustParticles::idpx2 = -1, DustParticles::idpx3 = -1;
+int DustParticles::itaus = -1;
 
-bool DustParticles::backreaction = false;
 Real DustParticles::mass = 1.0, DustParticles::taus0 = 0.0;
 
 //--------------------------------------------------------------------------------------
@@ -41,7 +44,9 @@ void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
     mass = pin->GetOrAddReal("particles", "mass", 1.0);
 
     // Define stopping time.
+    variable_taus = pin->GetOrAddBoolean("particles", "variable_taus", variable_taus);
     taus0 = pin->GetOrAddReal("particles", "taus0", taus0);
+    if (variable_taus) itaus = AddAuxProperty();
 
     // Turn on/off back reaction.
     backreaction = pin->GetOrAddBoolean("particles", "backreaction", false);
@@ -138,6 +143,7 @@ void DustParticles::AssignShorthands() {
   wx.InitWithShallowSlice(work, 2, iwx, 1);
   wy.InitWithShallowSlice(work, 2, iwy, 1);
   wz.InitWithShallowSlice(work, 2, iwz, 1);
+  if (variable_taus) taus.InitWithShallowSlice(auxprop, 2, itaus, 1);
 }
 
 //--------------------------------------------------------------------------------------
@@ -157,8 +163,27 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
     pc->MeshCoordsToCartesianVector(x1, x2, x3, wx(k), wy(k), wz(k), wx(k), wy(k), wz(k));
   }
 
-  if (taus0 > 0.0) {
-    // Add drag force to particles.
+  // Add drag force to particles.
+  if (variable_taus) {
+    // Variable stopping time
+    UserStoppingTime(t, dt, meshsrc);
+    for (int k = 0; k < npar; ++k) {
+      // TODO(ccyang): This is a temporary hack; to be fixed.
+      Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
+      //
+      Real c = dt / taus(k);
+      wx(k) = c * (vpx(k) - wx(k));
+      wy(k) = c * (vpy(k) - wy(k));
+      wz(k) = c * (vpz(k) - wz(k));
+      vpx(k) = vpx0(k) - wx(k);
+      vpy(k) = vpy0(k) - wy(k);
+      vpz(k) = vpz0(k) - wz(k);
+      //
+      vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
+      //
+    }
+  } else if (taus0 > 0.0) {
+    // Constant stopping time
     Real c = dt / taus0;
     for (int k = 0; k < npar; ++k) {
       // TODO(ccyang): This is a temporary hack; to be fixed.
@@ -175,7 +200,7 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
       //
     }
   } else if (taus0 == 0.0) {
-    // Instantaneously align the velocity of the particle to that of the gas.
+    // Tracer particles
     for (int k = 0; k < npar; ++k) {
       vpx(k) = wx(k);
       vpy(k) = wy(k);
@@ -190,6 +215,15 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
 //  \brief adds additional source terms to particles, overloaded by the user.
 
 void __attribute__((weak)) DustParticles::UserSourceTerms(
+    Real t, Real dt, const AthenaArray<Real>& meshsrc) {
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn void DustParticles::UserStoppingTime(Real t, Real dt,
+//                                           const AthenaArray<Real>& meshsrc)
+//  \brief assigns time-dependent stopping time to each particle, overloaded by the user.
+
+void __attribute__((weak)) DustParticles::UserStoppingTime(
     Real t, Real dt, const AthenaArray<Real>& meshsrc) {
 }
 

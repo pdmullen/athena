@@ -228,19 +228,22 @@ friend class MeshBlock;
 
  private:
   // Class variables
-  static bool initialized;   // whether or not the class is initialized
+  static bool initialized;    // whether or not the class is initialized
+  static bool backreaction;   // turn on/off back reaction
+  static bool variable_taus;  // whether or not the stopping time is variable
 
-  static int iwx, iwy, iwz;        // indices for working arrays
-  static int idpx1, idpx2, idpx3;  // indices for momentum change
+  static int iwx, iwy, iwz;         // indices for working arrays
+  static int idpx1, idpx2, idpx3;   // indices for momentum change
+  static int itaus;                 // index for stopping time
 
-  static bool backreaction;  // on/off of back reaction
-  static Real mass;          // mass of each particle
-  static Real taus0;         // constant/default stopping time (in code units)
+  static Real mass;   // mass of each particle
+  static Real taus0;  // constant/default stopping time (in code units)
 
   // Instance methods.
   void AssignShorthands();
   void SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsrc);
   void UserSourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsrc);
+  void UserStoppingTime(Real t, Real dt, const AthenaArray<Real>& meshsrc);
   void ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& meshsrc);
   void DepositToMesh(Real t, Real dt, const AthenaArray<Real>& meshsrc,
                      AthenaArray<Real>& meshdst);
@@ -248,6 +251,7 @@ friend class MeshBlock;
   // Instance variables
   AthenaArray<Real> wx, wy, wz;        // shorthand for working arrays
   AthenaArray<Real> dpx1, dpx2, dpx3;  // shorthand for momentum change
+  AthenaArray<Real> taus;              // shorthand for stopping time
 };
 
 //--------------------------------------------------------------------------------------
