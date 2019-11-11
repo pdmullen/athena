@@ -85,11 +85,40 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 //======================================================================================
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  // Find the total number of particles in each direction.
+  RegionSize& mesh_size = pmy_mesh->mesh_size;
+  int npx1 = (block_size.nx1 > 1) ?
+                  pin->GetOrAddInteger("problem", "npx1", mesh_size.nx1) : 1,
+      npx2 = (block_size.nx2 > 1) ?
+                  pin->GetOrAddInteger("problem", "npx2", mesh_size.nx2) : 1,
+      npx3 = (block_size.nx3 > 1) ?
+                  pin->GetOrAddInteger("problem", "npx3", mesh_size.nx3) : 1;
+
   // Get the dust-to-gas density ratio.
   Real dtog = pin->GetReal("problem", "dtog");
 
+  // Find the mass of each particle and the distance between adjacent particles.
+  Real vol = mesh_size.x1len * mesh_size.x2len * mesh_size.x3len;
+  Real dx1 = mesh_size.x1len / npx1,
+       dx2 = mesh_size.x2len / npx2,
+       dx3 = mesh_size.x3len / npx3;
+  DustParticles::SetOneParticleMass(dtog * vol / (npx1 * npx2 * npx3));
+
+  // Determine number of particles in the block.
+  int npx1_loc = static_cast<int>(std::round(block_size.x1len / dx1)),
+      npx2_loc = static_cast<int>(std::round(block_size.x2len / dx2)),
+      npx3_loc = static_cast<int>(std::round(block_size.x3len / dx3));
+  int npar = ppar->npar = npx1_loc * npx2_loc * npx3_loc;
+  if (npar > ppar->nparmax)
+    ppar->UpdateCapacity(npar);
+
   // Get the dimensionless stopping time.
-  Real taus = omega * pin->GetReal("particles", "taus");
+  Real taus = DustParticles::GetStoppingTime();
+  if (DustParticles::variable_taus) {
+    for (int k = 0; k < npar; ++k)
+      ppar->taus(k) = taus;
+  }
+  taus *= omega;
 
   // Get the wave number.
   Real cs0 = pin->GetReal("hydro", "iso_sound_speed");
@@ -129,31 +158,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       }
     }
   }
-
-  // Find the total number of particles in each direction.
-  RegionSize& mesh_size = pmy_mesh->mesh_size;
-  int npx1 = (block_size.nx1 > 1) ?
-                  pin->GetOrAddInteger("problem", "npx1", mesh_size.nx1) : 1,
-      npx2 = (block_size.nx2 > 1) ?
-                  pin->GetOrAddInteger("problem", "npx2", mesh_size.nx2) : 1,
-      npx3 = (block_size.nx3 > 1) ?
-                  pin->GetOrAddInteger("problem", "npx3", mesh_size.nx3) : 1;
-
-
-  // Find the mass of each particle and the distance between adjacent particles.
-  Real vol = mesh_size.x1len * mesh_size.x2len * mesh_size.x3len;
-  Real dx1 = mesh_size.x1len / npx1,
-       dx2 = mesh_size.x2len / npx2,
-       dx3 = mesh_size.x3len / npx3;
-  DustParticles::SetOneParticleMass(dtog * vol / (npx1 * npx2 * npx3));
-
-  // Determine number of particles in the block.
-  int npx1_loc = static_cast<int>(std::round(block_size.x1len / dx1)),
-      npx2_loc = static_cast<int>(std::round(block_size.x2len / dx2)),
-      npx3_loc = static_cast<int>(std::round(block_size.x3len / dx3));
-  int npar = ppar->npar = npx1_loc * npx2_loc * npx3_loc;
-  if (npar > ppar->nparmax)
-    ppar->UpdateCapacity(npar);
 
   // Uniformly distribute the particles.
   int ipar = 0;
