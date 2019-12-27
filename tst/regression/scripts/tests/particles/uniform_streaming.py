@@ -59,7 +59,7 @@ def analyze():
     vpy0 = float(input_problem["vpy0"]) if "vpy0" in input_problem else 0
     vpz0 = float(input_problem["vpz0"]) if "vpz0" in input_problem else 0
 
-    taus = float(input_particles["taus"])
+    taus = float(input_particles["taus0"])
     backreaction = False
     if "backreaction" in input_particles:
         if input_particles["backreaction"] == "true":
