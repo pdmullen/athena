@@ -214,6 +214,7 @@ friend class MeshBlock;
   static void Initialize(Mesh *pm, ParameterInput *pin);
   static void SetOneParticleMass(Real new_mass);
   static bool GetBackReaction();
+  static bool GetVariableTaus();
   static Real GetOneParticleMass();
   static Real GetStoppingTime();
 
@@ -260,6 +261,14 @@ friend class MeshBlock;
 
 inline bool DustParticles::GetBackReaction() {
   return backreaction;
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn bool DustParticles::GetVariableTaus()
+//  \brief returns if the stopping time can be variable or not.
+
+inline bool DustParticles::GetVariableTaus() {
+  return variable_taus;
 }
 
 //--------------------------------------------------------------------------------------
