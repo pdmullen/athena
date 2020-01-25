@@ -856,48 +856,42 @@ void Particles::ApplyBoundaryConditions(int k, Real &x1, Real &x2, Real &x3) {
                                       vpx0(k), vpy0(k), vpz0(k), vp10, vp20, vp30);
 
   // Apply periodic boundary conditions in X1.
-  if (active1_) {
-    if (x1 < mesh_size.x1min) {
-      // Inner x1
-      x1 += mesh_size.x1len;
-      x10 += mesh_size.x1len;
-      flag = true;
-    } else if (x1 >= mesh_size.x1max) {
-      // Outer x1
-      x1 -= mesh_size.x1len;
-      x10 -= mesh_size.x1len;
-      flag = true;
-    }
+  if (x1 < mesh_size.x1min) {
+    // Inner x1
+    x1 += mesh_size.x1len;
+    x10 += mesh_size.x1len;
+    flag = true;
+  } else if (x1 >= mesh_size.x1max) {
+    // Outer x1
+    x1 -= mesh_size.x1len;
+    x10 -= mesh_size.x1len;
+    flag = true;
   }
 
   // Apply periodic boundary conditions in X2.
-  if (active2_) {
-    if (x2 < mesh_size.x2min) {
-      // Inner x2
-      x2 += mesh_size.x2len;
-      x20 += mesh_size.x2len;
-      flag = true;
-    } else if (x2 >= mesh_size.x2max) {
-      // Outer x2
-      x2 -= mesh_size.x2len;
-      x20 -= mesh_size.x2len;
-      flag = true;
-    }
+  if (x2 < mesh_size.x2min) {
+    // Inner x2
+    x2 += mesh_size.x2len;
+    x20 += mesh_size.x2len;
+    flag = true;
+  } else if (x2 >= mesh_size.x2max) {
+    // Outer x2
+    x2 -= mesh_size.x2len;
+    x20 -= mesh_size.x2len;
+    flag = true;
   }
 
   // Apply periodic boundary conditions in X3.
-  if (active3_) {
-    if (x3 < mesh_size.x3min) {
-      // Inner x3
-      x3 += mesh_size.x3len;
-      x30 += mesh_size.x3len;
-      flag = true;
-    } else if (x3 >= mesh_size.x3max) {
-      // Outer x3
-      x3 -= mesh_size.x3len;
-      x30 -= mesh_size.x3len;
-      flag = true;
-    }
+  if (x3 < mesh_size.x3min) {
+    // Inner x3
+    x3 += mesh_size.x3len;
+    x30 += mesh_size.x3len;
+    flag = true;
+  } else if (x3 >= mesh_size.x3max) {
+    // Outer x3
+    x3 -= mesh_size.x3len;
+    x30 -= mesh_size.x3len;
+    flag = true;
   }
 
   if (flag) {
