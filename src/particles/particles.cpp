@@ -413,6 +413,7 @@ void Particles::ClearBoundary() {
 //  \brief clears links to neighbors.
 
 void Particles::ClearNeighbors() {
+  delete neighbor_[1][1][1].pnb;
   for (int i = 0; i < 3; ++i)
     for (int j = 0; j < 3; ++j)
       for (int k = 0; k < 3; ++k) {
@@ -466,8 +467,13 @@ void Particles::Integrate(int stage) {
 
 void Particles::LinkNeighbors(MeshBlockTree &tree,
     int64_t nrbx1, int64_t nrbx2, int64_t nrbx3, int root_level) {
-  // Construct links to neighbors.
-  neighbor_[1][1][1].pmb = pmy_block;
+  // Set myself as one of the neighbors.
+  Neighbor *pn = &neighbor_[1][1][1];
+  pn->pmb = pmy_block;
+  pn->pnb = new NeighborBlock;
+  pn->pnb->SetNeighbor(Globals::my_rank, pmy_block->loc.level,
+      pmy_block->gid, pmy_block->lid, 0, 0, 0, NeighborConnect::none,
+      -1, -1, false, false, 0, 0);
 
   // Save pointer to each neighbor.
   for (int i = 0; i < pbval_->nneighbor; ++i) {
@@ -575,9 +581,9 @@ void Particles::SendToNeighbors() {
     int xi1i = static_cast<int>(xi1(k)),
         xi2i = static_cast<int>(xi2(k)),
         xi3i = static_cast<int>(xi3(k));
-    int ox1 = active1_ ? CheckSide(xi1i, IS, IE) : 0,
-        ox2 = active2_ ? CheckSide(xi2i, JS, JE) : 0,
-        ox3 = active3_ ? CheckSide(xi3i, KS, KE) : 0;
+    int ox1 = CheckSide(xi1i, IS, IE),
+        ox2 = CheckSide(xi2i, JS, JE),
+        ox3 = CheckSide(xi3i, KS, KE);
     if (ox1 == 0 && ox2 == 0 && ox3 == 0) {
       ++k;
       continue;
@@ -588,6 +594,9 @@ void Particles::SendToNeighbors() {
     ApplyBoundaryConditions(k, x1, x2, x3);
 
     // Find the neighbor block to send it to.
+    if (!active1_) ox1 = 0;
+    if (!active2_) ox2 = 0;
+    if (!active3_) ox3 = 0;
     Neighbor *pn = FindTargetNeighbor(ox1, ox2, ox3, xi1i, xi2i, xi3i);
     NeighborBlock *pnb = pn->pnb;
     if (pnb == NULL) {
