@@ -114,9 +114,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // Get the dimensionless stopping time.
   Real taus = DustParticles::GetStoppingTime();
-  if (DustParticles::GetVariableTaus())
+  if (DustParticles::GetVariableTaus()) {
     for (int k = 0; k < npar; ++k)
       ppar->taus(k) = taus;
+  }
   taus *= omega;
 
   // Get the wave number.
