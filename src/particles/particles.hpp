@@ -52,10 +52,10 @@ friend class ParticleMesh;
   static void AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc);
   static void Initialize(Mesh *pm, ParameterInput *pin);
   static void PostInitialize(Mesh *pm, ParameterInput *pin);
+  static void FindDensityOnMesh(Mesh *pm, bool include_momentum);
   static void FindHistoryOutput(Mesh *pm, Real data_sum[], int pos);
   static void FormattedTableOutput(Mesh *pm, OutputParameters op);
   static void GetHistoryOutputNames(std::string output_names[]);
-  static void GetNumberDensityOnMesh(Mesh *pm, bool include_velocity);
   static int GetTotalNumber(Mesh *pm);
 
   // Class constant
@@ -111,8 +111,7 @@ friend class ParticleMesh;
 
   static int ixi1, ixi2, ixi3;     // indices for position indices
 
-  static int imvpx, imvpy, imvpz;  // indices for velocity components on mesh
-                                   // (only used for outputs)
+  static int imom1, imom2, imom3;  // indices for momentum components on mesh
 
   static Real cfl_par;  // CFL number for particles
 

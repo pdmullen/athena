@@ -624,7 +624,7 @@ void OutputType::LoadOutputData(MeshBlock *pmb) {
       pod = new OutputData;
       pod->type = "VECTORS";
       pod->name = "vp";
-      pod->data.InitWithShallowSlice(ppm->meshaux, 4, Particles::imvpx, 3);
+      pod->data.InitWithShallowSlice(ppm->meshaux, 4, Particles::imom1, 3);
       AppendOutputDataNode(pod);
       num_vars_ += 3;
     }
@@ -771,7 +771,7 @@ void Outputs::MakeOutputs(Mesh *pm, ParameterInput *pin, bool wtflag) {
         (wtflag && ptype->output_params.file_type == "rst")) {
       if (first && ptype->output_params.file_type != "hst") {
         pm->ApplyUserWorkBeforeOutput(pin);
-        if (PARTICLES) Particles::GetNumberDensityOnMesh(pm, true);
+        if (PARTICLES) Particles::FindDensityOnMesh(pm, true);
         first = false;
       }
       ptype->WriteOutputFile(pm, pin, wtflag);

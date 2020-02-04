@@ -41,7 +41,7 @@ int Particles::ivpx = -1, Particles::ivpy = -1, Particles::ivpz = -1;
 int Particles::ixp0 = -1, Particles::iyp0 = -1, Particles::izp0 = -1;
 int Particles::ivpx0 = -1, Particles::ivpy0 = -1, Particles::ivpz0 = -1;
 int Particles::ixi1 = -1, Particles::ixi2 = -1, Particles::ixi3 = -1;
-int Particles::imvpx = -1, Particles::imvpy = -1, Particles::imvpz = -1;
+int Particles::imom1 = -1, Particles::imom2 = -1, Particles::imom3 = -1;
 Real Particles::cfl_par = 1;
 ParameterInput* Particles::pinput = NULL;
 #ifdef MPI_PARALLEL
@@ -149,9 +149,9 @@ void Particles::Initialize(Mesh *pm, ParameterInput *pin) {
 
   // Initiate ParticleMesh class.
   ParticleMesh::Initialize(pin);
-  imvpx = ParticleMesh::AddMeshAux();
-  imvpy = ParticleMesh::AddMeshAux();
-  imvpz = ParticleMesh::AddMeshAux();
+  imom1 = ParticleMesh::AddMeshAux();
+  imom2 = ParticleMesh::AddMeshAux();
+  imom3 = ParticleMesh::AddMeshAux();
 
   // Get the CFL number for particles.
   cfl_par = pin->GetOrAddReal("particles", "cfl_par", pm->cfl_number);
@@ -181,6 +181,81 @@ void Particles::PostInitialize(Mesh *pm, ParameterInput *pin) {
     Particles *ppar = pmb->ppar;
     ppar->SetPositionIndices();
     pmb = pmb->next;
+  }
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum)
+//  \brief finds the number density of particles on the mesh.  If include_momentum is
+//    true, the momentum density field is also included, assuming mass of each particle
+//    is unity.
+
+void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
+  // Assign particle properties to mesh and send boundary.
+  ParticleMesh *ppm;
+  int nblocks = 0;
+  MeshBlock *pmb = pm->pblock;
+  while (pmb != NULL) {
+    ++nblocks;
+    ppm = pmb->ppar->ppm;
+    ppm->StartReceiving();
+    const Particles *ppar = pmb->ppar;
+    if (include_momentum) {
+      AthenaArray<Real> vp, vp1, vp2, vp3;
+      vp.NewAthenaArray(3, ppar->npar);
+      vp1.InitWithShallowSlice(vp, 2, 0, 1);
+      vp2.InitWithShallowSlice(vp, 2, 1, 1);
+      vp3.InitWithShallowSlice(vp, 2, 2, 1);
+      const Coordinates *pcoord = pmb->pcoord;
+      for (int k = 0; k < ppar->npar; ++k)
+        pcoord->CartesianToMeshCoordsVector(ppar->xp(k), ppar->yp(k), ppar->zp(k),
+            ppar->vpx(k), ppar->vpy(k), ppar->vpz(k), vp1(k), vp2(k), vp3(k));
+      ppm->AssignParticlesToMeshAux(vp, 0, imom1, 3);
+    } else {
+      ppm->AssignParticlesToMeshAux(ppar->realprop, 0, ppm->iweight, 0);
+    }
+    ppm->SendBoundary();
+    pmb = pmb->next;
+  }
+
+  std::vector<bool> completed(nblocks, false);
+  bool pending = true;
+  while (pending) {
+    pending = false;
+    pmb = pm->pblock;
+    for (int i = 0; i < nblocks; ++i) {
+      Coordinates *pc = pmb->pcoord;
+      ppm = pmb->ppar->ppm;
+      if (!completed[i]) {
+        // Finalize boundary communications.
+        if ((completed[i] = ppm->ReceiveBoundary())) {
+          // Convert to densities.
+          const int is = ppm->is, ie = ppm->ie;
+          const int js = ppm->js, je = ppm->je;
+          const int ks = ppm->ks, ke = ppm->ke;
+          if (include_momentum) {
+            for (int k = ks; k <= ke; ++k)
+              for (int j = js; j <= je; ++j)
+                for (int i = is; i <= ie; ++i) {
+                  Real vol(pc->GetCellVolume(k,j,i));
+                  ppm->weight(k,j,i) /= vol;
+                  ppm->meshaux(imom1,k,j,i) /= vol;
+                  ppm->meshaux(imom2,k,j,i) /= vol;
+                  ppm->meshaux(imom3,k,j,i) /= vol;
+                }
+          } else {
+            for (int k = ks; k <= ke; ++k)
+              for (int j = js; j <= je; ++j)
+                for (int i = is; i <= ie; ++i)
+                  ppm->weight(k,j,i) /= pc->GetCellVolume(k,j,i);
+          }
+          ppm->ClearBoundary();
+        } else {
+          pending = true;
+        }
+      }
+      pmb = pmb->next;
+    }
   }
 }
 
@@ -234,78 +309,6 @@ void Particles::GetHistoryOutputNames(std::string output_names[]) {
   output_names[4] = "vp1^2";
   output_names[5] = "vp2^2";
   output_names[6] = "vp3^2";
-}
-
-//--------------------------------------------------------------------------------------
-//! \fn void Particles::GetNumberDensityOnMesh(Mesh *pm, bool include_velocity)
-//  \brief finds the number density of particles on the mesh.  If include_velocity is
-//    true, the velocity field is also included.
-
-void Particles::GetNumberDensityOnMesh(Mesh *pm, bool include_velocity) {
-  // Assign particle properties to mesh and send boundary.
-  ParticleMesh *ppm;
-  int nblocks = 0;
-  MeshBlock *pmb = pm->pblock;
-  while (pmb != NULL) {
-    ++nblocks;
-    ppm = pmb->ppar->ppm;
-    ppm->StartReceiving();
-    const Particles *ppar = pmb->ppar;
-    if (include_velocity) {
-      AthenaArray<Real> vp, vp1, vp2, vp3;
-      vp.NewAthenaArray(3, ppar->npar);
-      vp1.InitWithShallowSlice(vp, 2, 0, 1);
-      vp2.InitWithShallowSlice(vp, 2, 1, 1);
-      vp3.InitWithShallowSlice(vp, 2, 2, 1);
-      const Coordinates *pcoord = pmb->pcoord;
-      for (int k = 0; k < ppar->npar; ++k)
-        pcoord->CartesianToMeshCoordsVector(ppar->xp(k), ppar->yp(k), ppar->zp(k),
-            ppar->vpx(k), ppar->vpy(k), ppar->vpz(k), vp1(k), vp2(k), vp3(k));
-      ppm->AssignParticlesToMeshAux(vp, 0, imvpx, 3);
-    } else {
-      ppm->AssignParticlesToMeshAux(ppar->realprop, 0, ppm->iweight, 0);
-    }
-    ppm->SendBoundary();
-    pmb = pmb->next;
-  }
-
-  std::vector<bool> completed(nblocks, false);
-  bool pending = true;
-  while (pending) {
-    pending = false;
-    pmb = pm->pblock;
-    for (int i = 0; i < nblocks; ++i) {
-      Coordinates *pc = pmb->pcoord;
-      ppm = pmb->ppar->ppm;
-      if (!completed[i]) {
-        // Finalize boundary communications.
-        if ((completed[i] = ppm->ReceiveBoundary())) {
-          const int is = ppm->is, ie = ppm->ie;
-          const int js = ppm->js, je = ppm->je;
-          const int ks = ppm->ks, ke = ppm->ke;
-          if (include_velocity) {
-            // Compute the velocity field.
-            for (int l = imvpx; l <= imvpz; ++l)
-              for (int k = ks; k <= ke; ++k)
-                for (int j = js; j <= je; ++j)
-                  for (int i = is; i <= ie; ++i) {
-                    Real w = ppm->weight(k,j,i);
-                    ppm->meshaux(l,k,j,i) /= (w != 0) ? w : 1;
-                  }
-          }
-          // Compute the number density.
-          for (int k = ks; k <= ke; ++k)
-            for (int j = js; j <= je; ++j)
-              for (int i = is; i <= ie; ++i)
-                ppm->weight(k,j,i) /= pc->GetCellVolume(k,j,i);
-          ppm->ClearBoundary();
-        } else {
-          pending = true;
-        }
-      }
-      pmb = pmb->next;
-    }
-  }
 }
 
 //--------------------------------------------------------------------------------------
