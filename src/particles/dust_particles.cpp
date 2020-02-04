@@ -14,6 +14,7 @@
 #include "../coordinates/coordinates.hpp"
 #include "../hydro/hydro.hpp"
 #include "particles.hpp"
+#include "particle_gravity.hpp"
 
 // Class variable initialization
 bool DustParticles::initialized = false;
@@ -121,6 +122,10 @@ DustParticles::DustParticles(MeshBlock *pmb, ParameterInput *pin)
     dpx2.InitWithShallowSlice(ppm->meshaux, 4, idpx2, 1);
     dpx3.InitWithShallowSlice(ppm->meshaux, 4, idpx3, 1);
   }
+
+  if (SELF_GRAVITY_ENABLED == 2)
+    // Activate particle gravity.
+    ppgrav = new ParticleGravity(this);
 }
 
 //--------------------------------------------------------------------------------------
@@ -137,6 +142,9 @@ DustParticles::~DustParticles() {
     dpx2.DeleteAthenaArray();
     dpx3.DeleteAthenaArray();
   }
+
+  if (SELF_GRAVITY_ENABLED == 2)
+    delete ppgrav;
 }
 
 //--------------------------------------------------------------------------------------

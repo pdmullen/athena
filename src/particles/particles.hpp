@@ -25,6 +25,9 @@
 #include <mpi.h>
 #endif
 
+// Forward definitions
+class ParticleGravity;
+
 //--------------------------------------------------------------------------------------
 //! \struct Neighbor
 //  \brief defines a structure for links to neighbors
@@ -44,6 +47,7 @@ struct Neighbor {
 class Particles {
 friend class MeshBlock;  // Make writing initial conditions possible.
 friend class OutputType;
+friend class ParticleGravity;
 friend class ParticleMesh;
 
  public:
@@ -257,6 +261,7 @@ friend class MeshBlock;
   AthenaArray<Real> wx, wy, wz;        // shorthand for working arrays
   AthenaArray<Real> dpx1, dpx2, dpx3;  // shorthand for momentum change
   AthenaArray<Real> taus;              // shorthand for stopping time
+  ParticleGravity *ppgrav;
 };
 
 //--------------------------------------------------------------------------------------
