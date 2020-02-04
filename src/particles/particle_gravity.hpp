@@ -23,11 +23,16 @@ class ParticleGravity {
    // Destructor
    ~ParticleGravity();
 
+   // Instance methods
+   void FindGravitationalForce(const AthenaArray<Real>& phi);
+
  private:
    // Attributes
-   AthenaArray<Real> gforce;  // gravitational force
-   Particles *pmy_par;  // pointer to parent Particles instance
-   int nx1, nx2, nx3;   // block dimensions
+   AthenaArray<Real> gforce;        // gravitational force
+   Coordinates *pcoord;             // pointer to the coordinates
+   Particles *pmy_par;              // pointer to parent Particles instance
+   bool active1, active2, active3;  // whether or not a direction is active
+   int nx1, nx2, nx3;               // block dimensions
 };
 
 #endif  // PARTICLES_PARTICLE_GRAVITY_HPP_
