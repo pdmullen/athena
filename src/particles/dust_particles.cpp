@@ -30,6 +30,8 @@ Real DustParticles::mass = 1.0, DustParticles::taus0 = 0.0;
 //! \fn void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum)
 //  \brief finds the mass density of particles on the mesh.  If include_momentum is
 //    true, the momentum density field is also included.
+// Postcondition: ppm->weight becomes the density in each cell, and if include_momentum
+//    is true, ppm->meshaux(imom1:imom3,:,:,:) becomes the momentum density.
 
 void DustParticles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
   // Assign the particles onto the mesh.

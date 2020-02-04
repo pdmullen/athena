@@ -187,8 +187,10 @@ void Particles::PostInitialize(Mesh *pm, ParameterInput *pin) {
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum)
 //  \brief finds the number density of particles on the mesh.  If include_momentum is
-//    true, the momentum density field is also included, assuming mass of each particle
+//    true, the momentum density field is also computed, assuming mass of each particle
 //    is unity.
+// Postcondition: ppm->weight becomes the density in each cell, and if include_momentum
+//    is true, ppm->meshaux(imom1:imom3,:,:,:) becomes the momentum density.
 
 void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
   // Assign particle properties to mesh and send boundary.
