@@ -210,6 +210,7 @@ friend class MeshBlock;
 
  public:
   // Class method
+  static void FindDensityOnMesh(Mesh *pm, bool include_momentum);
   static void Initialize(Mesh *pm, ParameterInput *pin);
   static void SetOneParticleMass(Real new_mass);
   static bool GetBackReaction();

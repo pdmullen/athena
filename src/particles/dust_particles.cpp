@@ -27,6 +27,41 @@ int DustParticles::itaus = -1;
 Real DustParticles::mass = 1.0, DustParticles::taus0 = 0.0;
 
 //--------------------------------------------------------------------------------------
+//! \fn void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum)
+//  \brief finds the mass density of particles on the mesh.  If include_momentum is
+//    true, the momentum density field is also included.
+
+void DustParticles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
+  // Assign the particles onto the mesh.
+  Particles::FindDensityOnMesh(pm, include_momentum);
+
+  ParticleMesh *ppm;
+  MeshBlock *pmb(pm->pblock);
+  while (pmb != NULL) {
+    ppm = pmb->ppar->ppm;
+
+    // Find the mass density.
+    for (int k = ppm->ks; k <= ppm->ke; ++k)
+      for (int j = ppm->js; j <= ppm->je; ++j)
+        for (int i = ppm->is; i <= ppm->ie; ++i)
+          ppm->weight(k,j,i) *= mass;
+
+    // Find the momentum density.
+    if (include_momentum) {
+      for (int k = ppm->ks; k <= ppm->ke; ++k)
+        for (int j = ppm->js; j <= ppm->je; ++j)
+          for (int i = ppm->is; i <= ppm->ie; ++i) {
+            ppm->meshaux(imom1,k,j,i) *= mass;
+            ppm->meshaux(imom2,k,j,i) *= mass;
+            ppm->meshaux(imom3,k,j,i) *= mass;
+          }
+    }
+
+    pmb = pmb->next;
+  }
+}
+
+//--------------------------------------------------------------------------------------
 //! \fn void DustParticles::Initialize(Mesh *pm, ParameterInput *pin)
 //  \brief initializes the class.
 
