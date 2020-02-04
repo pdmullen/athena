@@ -224,6 +224,10 @@ friend class MeshBlock;
   // Destructor
   ~DustParticles();
 
+  // Accessors
+  AthenaArray<Real> GetMassDensity() const;
+  AthenaArray<Real> GetVelocityField() const;
+
   // Instance method
   Real NewBlockTimeStep();
 
@@ -285,6 +289,16 @@ inline Real DustParticles::GetOneParticleMass() {
 
 inline Real DustParticles::GetStoppingTime() {
   return taus0;
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn AthenaArray<Real> DustParticles::GetMassDensity()
+//  \brief returns the mass density of particles on the mesh.
+// Precondition: The particle properties on mesh must be assigned using the class method
+//   DustParticles::FindDensityOnMesh().
+
+inline AthenaArray<Real> DustParticles::GetMassDensity() const {
+  return ppm->weight;
 }
 
 #endif  // PARTICLES_PARTICLES_HPP_

@@ -624,7 +624,7 @@ void OutputType::LoadOutputData(MeshBlock *pmb) {
       pod = new OutputData;
       pod->type = "VECTORS";
       pod->name = "vp";
-      pod->data.InitWithShallowSlice(ppm->meshaux, 4, Particles::imom1, 3);
+      pod->data = pmb->ppar->GetVelocityField();
       AppendOutputDataNode(pod);
       num_vars_ += 3;
     }
@@ -635,15 +635,7 @@ void OutputType::LoadOutputData(MeshBlock *pmb) {
       pod = new OutputData;
       pod->type = "SCALARS";
       pod->name = "rhop";
-      pod->data.NewAthenaArray(ppm->weight.GetDim3(),
-                               ppm->weight.GetDim2(), ppm->weight.GetDim1());
-      const int is = ppm->is, js = ppm->js, ks = ppm->ks;
-      const int ie = ppm->ie, je = ppm->je, ke = ppm->ke;
-      const Real mass = DustParticles::GetOneParticleMass();
-      for (int k = ks; k <= ke; ++k)
-        for (int j = js; j <= je; ++j)
-          for (int i = is; i <= ie; ++i)
-            pod->data(k,j,i) = mass * ppm->weight(k,j,i);
+      pod->data = pmb->ppar->GetMassDensity();
       AppendOutputDataNode(pod);
       num_vars_++;
     }
