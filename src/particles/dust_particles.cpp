@@ -96,6 +96,9 @@ void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
       idpx3 = imom3;
     }
 
+    if (SELF_GRAVITY_ENABLED == 2)
+      ParticleGravity::Initialize();
+
     initialized = true;
   }
 }

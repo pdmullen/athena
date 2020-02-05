@@ -26,7 +26,13 @@ class ParticleGravity {
    // Instance methods
    void FindGravitationalForce(const AthenaArray<Real>& phi);
 
+   // Class methods
+   static void Initialize();
+
  private:
+   // Class variables
+   static int iwx, iwy, iwz;  // indices to working arrays
+
    // Attributes
    AthenaArray<Real> gforce;        // gravitational force
    Coordinates *pcoord;             // pointer to the coordinates

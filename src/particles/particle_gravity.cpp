@@ -17,6 +17,9 @@
 #include "particle_gravity.hpp"
 #include "particles.hpp"
 
+// Class variables
+int ParticleGravity::iwx(-1), ParticleGravity::iwy(-1), ParticleGravity::iwz(-1);
+
 //--------------------------------------------------------------------------------------
 //! \fn ParticleGravity::ParticleGravity(Particles *ppar)
 //  \brief constructs a new ParticleGravity instance.
@@ -95,4 +98,15 @@ void ParticleGravity::FindGravitationalForce(const AthenaArray<Real>& phi) {
         gforce(1,k,j,i) = active2 ? a2 * (phi(k,j-1,i) - phi(k,j+1,i)) : 0.0;
         gforce(2,k,j,i) = active3 ? a3 * (phi(k-1,j,i) - phi(k+1,j,i)) : 0.0;
       }
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn void ParticleGravity::Initialize()
+//  \brief initializes the class.
+
+void ParticleGravity::Initialize() {
+  // Get the indices to working arrays for particles.
+  iwx = Particles::AddWorkingArray();
+  iwy = Particles::AddWorkingArray();
+  iwz = Particles::AddWorkingArray();
 }
