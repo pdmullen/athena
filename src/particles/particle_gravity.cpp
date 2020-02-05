@@ -14,6 +14,7 @@
 #include "../athena.hpp"
 #include "../athena_arrays.hpp"
 #include "../coordinates/coordinates.hpp"
+#include "../mesh/mesh.hpp"
 #include "particle_gravity.hpp"
 #include "particle-mesh.hpp"
 #include "particles.hpp"
@@ -34,16 +35,16 @@ ParticleGravity::ParticleGravity(Particles *ppar) {
   pcoord = ppar->pmy_block->pcoord;
 
   // Remember the dimensions of my meshblock.
-  RegionSize& block_size = ppar->pmy_block->block_size;
-  nx1 = block_size.nx1;
-  nx2 = block_size.nx2;
-  nx3 = block_size.nx3;
-  active1 = nx1 > 1;
-  active2 = nx2 > 1;
-  active3 = nx3 > 1;
+  MeshBlock *pmb(ppar->pmy_block);
+  ncells1 = pmb->ncells1;
+  ncells2 = pmb->ncells2;
+  ncells3 = pmb->ncells3;
+  active1 = ncells1 > 1;
+  active2 = ncells2 > 1;
+  active3 = ncells3 > 1;
 
   // Allocate space for gravitational force.
-  gforce.NewAthenaArray(3, nx3, nx2, nx1);
+  gforce.NewAthenaArray(3, ncells3, ncells2, ncells1);
 }
 
 //--------------------------------------------------------------------------------------
@@ -99,11 +100,11 @@ void ParticleGravity::FindGravitationalForce(const AthenaArray<Real>& phi) {
 
   // Set up the loop dimensions.
   const int is = active1 ? 1 : 0;
-  const int ie = active1 ? nx1 - 2 : 0;
+  const int ie = active1 ? ncells1 - 2 : 0;
   const int js = active2 ? 1 : 0;
-  const int je = active2 ? nx2 - 2 : 0;
+  const int je = active2 ? ncells2 - 2 : 0;
   const int ks = active3 ? 1 : 0;
-  const int ke = active3 ? nx3 - 2 : 0;
+  const int ke = active3 ? ncells3 - 2 : 0;
 
   // Get the grid spacing.
   Real a1(0.5 / pcoord->dx1v(0)), a2(0.5 / pcoord->dx2v(0)), a3(0.5 / pcoord->dx3v(0));

@@ -41,7 +41,7 @@ class ParticleGravity {
   Particles *pmy_par;              // pointer to parent Particles instance
   ParticleMesh *pmy_pm;            // pointer to my ParticleMesh instance
   bool active1, active2, active3;  // whether or not a direction is active
-  int nx1, nx2, nx3;               // block dimensions
+  int ncells1, ncells2, ncells3;   // block dimensions
 };
 
 #endif  // PARTICLES_PARTICLE_GRAVITY_HPP_
