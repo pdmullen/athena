@@ -18,9 +18,10 @@
 #include "particle_gravity.hpp"
 
 // Class variable initialization
-bool DustParticles::initialized = false;
-bool DustParticles::backreaction = false;
-bool DustParticles::variable_taus = false;
+bool DustParticles::initialized(false);
+bool DustParticles::backreaction(false);
+bool DustParticles::dragforce(true);
+bool DustParticles::variable_taus(false);
 
 int DustParticles::iwx = -1, DustParticles::iwy = -1, DustParticles::iwz = -1;
 int DustParticles::idpx1 = -1, DustParticles::idpx2 = -1, DustParticles::idpx3 = -1;
@@ -88,6 +89,7 @@ void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
     if (variable_taus) itaus = AddAuxProperty();
 
     // Turn on/off back reaction.
+    dragforce = taus0 >= 0.0;
     backreaction = pin->GetOrAddBoolean("particles", "backreaction", false);
     if (taus0 == 0.0) backreaction = false;
 
@@ -220,60 +222,70 @@ void DustParticles::AssignShorthands() {
 //  \brief adds acceleration to particles.
 
 void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsrc) {
-  // Interpolate gas velocity onto particles.
-  ppm->InterpolateMeshToParticles(meshsrc, IVX, work, iwx, 3);
+  if (dragforce) {
+    // Interpolate gas velocity onto particles.
+    ppm->InterpolateMeshToParticles(meshsrc, IVX, work, iwx, 3);
 
-  // Transform the gas velocity into Cartesian.
-  const Coordinates *pc = pmy_block->pcoord;
-  for (int k = 0; k < npar; ++k) {
-    Real x1, x2, x3;
-    // TODO(ccyang): using (xp0, yp0, zp0) is a temporary hack.
-    pc->CartesianToMeshCoords(xp0(k), yp0(k), zp0(k), x1, x2, x3);
-    pc->MeshCoordsToCartesianVector(x1, x2, x3, wx(k), wy(k), wz(k), wx(k), wy(k), wz(k));
-  }
+    // Transform the gas velocity into Cartesian.
+    const Coordinates *pc = pmy_block->pcoord;
+    for (int k = 0; k < npar; ++k) {
+      Real x1, x2, x3;
+      // TODO(ccyang): using (xp0, yp0, zp0) is a temporary hack.
+      pc->CartesianToMeshCoords(xp0(k), yp0(k), zp0(k), x1, x2, x3);
+      pc->MeshCoordsToCartesianVector(x1, x2, x3, wx(k), wy(k), wz(k),
+                                                  wx(k), wy(k), wz(k));
+    }
 
-  // Add drag force to particles.
-  if (variable_taus) {
-    // Variable stopping time
-    UserStoppingTime(t, dt, meshsrc);
+    // Add drag force to particles.
+    if (variable_taus) {
+      // Variable stopping time
+      UserStoppingTime(t, dt, meshsrc);
+      for (int k = 0; k < npar; ++k) {
+        // TODO(ccyang): This is a temporary hack; to be fixed.
+        Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
+        //
+        Real c = dt / taus(k);
+        wx(k) = c * (vpx(k) - wx(k));
+        wy(k) = c * (vpy(k) - wy(k));
+        wz(k) = c * (vpz(k) - wz(k));
+        vpx(k) = vpx0(k) - wx(k);
+        vpy(k) = vpy0(k) - wy(k);
+        vpz(k) = vpz0(k) - wz(k);
+        //
+        vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
+        //
+      }
+    } else if (taus0 > 0.0) {
+      // Constant stopping time
+      Real c = dt / taus0;
+      for (int k = 0; k < npar; ++k) {
+        // TODO(ccyang): This is a temporary hack; to be fixed.
+        Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
+        //
+        wx(k) = c * (vpx(k) - wx(k));
+        wy(k) = c * (vpy(k) - wy(k));
+        wz(k) = c * (vpz(k) - wz(k));
+        vpx(k) = vpx0(k) - wx(k);
+        vpy(k) = vpy0(k) - wy(k);
+        vpz(k) = vpz0(k) - wz(k);
+        //
+        vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
+        //
+      }
+    } else if (taus0 == 0.0) {
+      // Tracer particles
+      for (int k = 0; k < npar; ++k) {
+        vpx(k) = wx(k);
+        vpy(k) = wy(k);
+        vpz(k) = wz(k);
+      }
+    }
+  } else {
     for (int k = 0; k < npar; ++k) {
       // TODO(ccyang): This is a temporary hack; to be fixed.
       Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
-      //
-      Real c = dt / taus(k);
-      wx(k) = c * (vpx(k) - wx(k));
-      wy(k) = c * (vpy(k) - wy(k));
-      wz(k) = c * (vpz(k) - wz(k));
-      vpx(k) = vpx0(k) - wx(k);
-      vpy(k) = vpy0(k) - wy(k);
-      vpz(k) = vpz0(k) - wz(k);
-      //
+      vpx(k) = vpx0(k); vpy(k) = vpy0(k); vpz(k) = vpz0(k);
       vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
-      //
-    }
-  } else if (taus0 > 0.0) {
-    // Constant stopping time
-    Real c = dt / taus0;
-    for (int k = 0; k < npar; ++k) {
-      // TODO(ccyang): This is a temporary hack; to be fixed.
-      Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
-      //
-      wx(k) = c * (vpx(k) - wx(k));
-      wy(k) = c * (vpy(k) - wy(k));
-      wz(k) = c * (vpz(k) - wz(k));
-      vpx(k) = vpx0(k) - wx(k);
-      vpy(k) = vpy0(k) - wy(k);
-      vpz(k) = vpz0(k) - wz(k);
-      //
-      vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
-      //
-    }
-  } else if (taus0 == 0.0) {
-    // Tracer particles
-    for (int k = 0; k < npar; ++k) {
-      vpx(k) = wx(k);
-      vpy(k) = wy(k);
-      vpz(k) = wz(k);
     }
   }
 
@@ -309,7 +321,7 @@ void __attribute__((weak)) DustParticles::UserStoppingTime(
 
 void DustParticles::ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& meshsrc) {
   // Nothing to do if no back reaction.
-  if (!backreaction) return;
+  if (!dragforce || !backreaction) return;
 
   // Transform the momentum change in mesh coordinates.
   const Coordinates *pc = pmy_block->pcoord;
@@ -329,7 +341,7 @@ void DustParticles::ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& mes
 
 void DustParticles::DepositToMesh(
          Real t, Real dt, const AthenaArray<Real>& meshsrc, AthenaArray<Real>& meshdst) {
-  if (backreaction)
+  if (dragforce && backreaction)
     // Deposit particle momentum changes to the gas.
     ppm->DepositMeshAux(meshdst, idpx1, IM1, 3);
 }

@@ -239,6 +239,7 @@ friend class MeshBlock;
   // Class variables
   static bool initialized;    // whether or not the class is initialized
   static bool backreaction;   // turn on/off back reaction
+  static bool dragforce;      // turn on/off drag force
   static bool variable_taus;  // whether or not the stopping time is variable
 
   static int iwx, iwy, iwz;         // indices for working arrays
