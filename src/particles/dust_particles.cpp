@@ -14,8 +14,8 @@
 #include "../coordinates/coordinates.hpp"
 #include "../gravity/gravity.hpp"
 #include "../hydro/hydro.hpp"
-#include "particles.hpp"
 #include "particle_gravity.hpp"
+#include "particles.hpp"
 
 // Class variable initialization
 bool DustParticles::initialized(false);

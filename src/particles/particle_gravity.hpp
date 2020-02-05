@@ -18,30 +18,30 @@ class Particles;
 
 class ParticleGravity {
  public:
-   // Constructor
-   ParticleGravity(Particles *ppar);
+  // Constructor
+  explicit ParticleGravity(Particles *ppar);
 
-   // Destructor
-   ~ParticleGravity();
+  // Destructor
+  ~ParticleGravity();
 
-   // Instance methods
-   void ExertGravitationalForce(Real dt);
-   void FindGravitationalForce(const AthenaArray<Real>& phi);
+  // Instance methods
+  void ExertGravitationalForce(Real dt);
+  void FindGravitationalForce(const AthenaArray<Real>& phi);
 
-   // Class methods
-   static void Initialize();
+  // Class methods
+  static void Initialize();
 
  private:
-   // Class variables
-   static int iwx, iwy, iwz;  // indices to working arrays
+  // Class variables
+  static int iwx, iwy, iwz;  // indices to working arrays
 
-   // Attributes
-   AthenaArray<Real> gforce;        // gravitational force
-   Coordinates *pcoord;             // pointer to the coordinates
-   Particles *pmy_par;              // pointer to parent Particles instance
-   ParticleMesh *pmy_pm;            // pointer to my ParticleMesh instance
-   bool active1, active2, active3;  // whether or not a direction is active
-   int nx1, nx2, nx3;               // block dimensions
+  // Attributes
+  AthenaArray<Real> gforce;        // gravitational force
+  Coordinates *pcoord;             // pointer to the coordinates
+  Particles *pmy_par;              // pointer to parent Particles instance
+  ParticleMesh *pmy_pm;            // pointer to my ParticleMesh instance
+  bool active1, active2, active3;  // whether or not a direction is active
+  int nx1, nx2, nx3;               // block dimensions
 };
 
 #endif  // PARTICLES_PARTICLE_GRAVITY_HPP_
