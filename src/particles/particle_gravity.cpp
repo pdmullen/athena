@@ -15,6 +15,7 @@
 #include "../athena_arrays.hpp"
 #include "../coordinates/coordinates.hpp"
 #include "particle_gravity.hpp"
+#include "particle-mesh.hpp"
 #include "particles.hpp"
 
 // Class variables
@@ -27,6 +28,7 @@ int ParticleGravity::iwx(-1), ParticleGravity::iwy(-1), ParticleGravity::iwz(-1)
 ParticleGravity::ParticleGravity(Particles *ppar) {
   // Remember my parent Particles instance.
   pmy_par = ppar;
+  pmy_pm = ppar->ppm;
 
   // Remember the coordinates.
   pcoord = ppar->pmy_block->pcoord;
@@ -51,6 +53,22 @@ ParticleGravity::ParticleGravity(Particles *ppar) {
 ParticleGravity::~ParticleGravity() {
   // Deallocate space for gravitational force.
   gforce.DeleteAthenaArray();
+}
+
+//--------------------------------------------------------------------------------------
+//! \fn void ParticleGravity::ExertGravitationalForce(Real dt)
+//  \brief exerts the gravitational force on each particle.
+
+void ParticleGravity::ExertGravitationalForce(Real dt) {
+  // Interpolate the gravitational force onto each particle.
+  pmy_pm->InterpolateMeshToParticles(gforce, 0, pmy_par->work, iwx, 3);
+
+  // Add the force.
+  for (int k = 0; k < pmy_par->npar; ++k) {
+    pmy_par->vpx(k) += dt * pmy_par->work(iwx,k);
+    pmy_par->vpy(k) += dt * pmy_par->work(iwy,k);
+    pmy_par->vpz(k) += dt * pmy_par->work(iwz,k);
+  }
 }
 
 //--------------------------------------------------------------------------------------

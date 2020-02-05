@@ -12,6 +12,7 @@
 // Athena++ headers
 #include "../athena.hpp"
 #include "../coordinates/coordinates.hpp"
+#include "../gravity/gravity.hpp"
 #include "../hydro/hydro.hpp"
 #include "particles.hpp"
 #include "particle_gravity.hpp"
@@ -274,6 +275,12 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
       vpy(k) = wy(k);
       vpz(k) = wz(k);
     }
+  }
+
+  if (SELF_GRAVITY_ENABLED == 2) {
+    // Add gravitational force from the Poisson solution.
+    ppgrav->FindGravitationalForce(pmy_block->pgrav->phi);
+    ppgrav->ExertGravitationalForce(dt);
   }
 }
 

@@ -9,6 +9,7 @@
 //  \brief provides the header for the ParticleGravity class.
 
 // Forward definition
+class ParticleMesh;
 class Particles;
 
 //--------------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ class ParticleGravity {
    ~ParticleGravity();
 
    // Instance methods
+   void ExertGravitationalForce(Real dt);
    void FindGravitationalForce(const AthenaArray<Real>& phi);
 
    // Class methods
@@ -37,6 +39,7 @@ class ParticleGravity {
    AthenaArray<Real> gforce;        // gravitational force
    Coordinates *pcoord;             // pointer to the coordinates
    Particles *pmy_par;              // pointer to parent Particles instance
+   ParticleMesh *pmy_pm;            // pointer to my ParticleMesh instance
    bool active1, active2, active3;  // whether or not a direction is active
    int nx1, nx2, nx3;               // block dimensions
 };
