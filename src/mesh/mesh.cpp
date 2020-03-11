@@ -91,7 +91,10 @@ Mesh::Mesh(ParameterInput *pin, int mesh_test) :
     nlim(pin->GetOrAddInteger("time", "nlim", -1)), ncycle(),
     ncycle_out(pin->GetOrAddInteger("time", "ncycle_out", 1)),
     dt_diagnostics(pin->GetOrAddInteger("time", "dt_diagnostics", -1)),
-    muj(), nuj(), muj_tilde(),
+    sts_integrator(pin->GetOrAddString("time", "sts_integrator", "rkl1")),
+    sts_max_dt_ratio(pin->GetOrAddReal("time", "sts_max_dt_ratio", -1.0)),
+    sts_loc(TaskType::main_int),
+    muj(), nuj(), muj_tilde(), gammaj_tilde(),
     nbnew(), nbdel(),
     step_since_lb(), gflag(), turb_flag(),
     // private members:
@@ -333,7 +336,7 @@ Mesh::Mesh(ParameterInput *pin, int mesh_test) :
         if (lrlev > max_level) {
           msg << "### FATAL ERROR in Mesh constructor" << std::endl
               << "Refinement level exceeds the maximum level (specify "
-              << "'maxlevel' parameter in <mesh> input block if adaptive)."
+              << "'numlevel' parameter in <mesh> input block if adaptive)."
               << std::endl;
           ATHENA_ERROR(msg);
         }
@@ -570,7 +573,10 @@ Mesh::Mesh(ParameterInput *pin, IOWrapper& resfile, int mesh_test) :
     nlim(pin->GetOrAddInteger("time", "nlim", -1)), ncycle(),
     ncycle_out(pin->GetOrAddInteger("time", "ncycle_out", 1)),
     dt_diagnostics(pin->GetOrAddInteger("time", "dt_diagnostics", -1)),
-    muj(), nuj(), muj_tilde(),
+    sts_integrator(pin->GetOrAddString("time", "sts_integrator", "none")),
+    sts_max_dt_ratio(pin->GetOrAddReal("time", "sts_max_dt_ratio", -1.0)),
+    sts_loc(TaskType::main_int),
+    muj(), nuj(), muj_tilde(), gammaj_tilde(),
     nbnew(), nbdel(),
     step_since_lb(), gflag(), turb_flag(),
     // private members:
@@ -1113,6 +1119,13 @@ void Mesh::NewTimeStep() {
   if (time < tlim && (tlim - time) < dt) // timestep would take us past desired endpoint
     dt = tlim - time;
 
+  if (STS_ENABLED) {
+    Real dt_ratio = dt / dt_parabolic;
+    if (sts_max_dt_ratio > 0 && dt_ratio > sts_max_dt_ratio) {
+      dt = sts_max_dt_ratio * dt_parabolic;
+    }
+  }
+
   return;
 }
 
@@ -1403,7 +1416,8 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
         if (SHEARING_BOX) {
           pbval->ComputeShear(time);
         }
-        pbval->StartReceiving(BoundaryCommSubset::mesh_init);
+        pbval->StartReceivingSubset(BoundaryCommSubset::mesh_init,
+                                    pbval->bvars_main_int);
       }
 
       // send conserved variables
@@ -1432,7 +1446,8 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
         if (SHEARING_BOX) {
           pmb->phydro->hbvar.AddHydroShearForInit();
         }
-        pbval->ClearBoundary(BoundaryCommSubset::mesh_init);
+        pbval->ClearBoundarySubset(BoundaryCommSubset::mesh_init,
+                                   pbval->bvars_main_int);
       }
 
       // With AMR/SMR GR send primitives to enable cons->prim before prolongation
@@ -1441,7 +1456,8 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
 #pragma omp for private(pmb,pbval)
         for (int i=0; i<nmb; ++i) {
           pmb = pmb_array[i]; pbval = pmb->pbval;
-          pbval->StartReceiving(BoundaryCommSubset::gr_amr);
+          pbval->StartReceivingSubset(BoundaryCommSubset::gr_amr,
+                                      pbval->bvars_main_int);
         }
 
         // send primitives
@@ -1458,7 +1474,8 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
         for (int i=0; i<nmb; ++i) {
           pmb = pmb_array[i]; pbval = pmb->pbval;
           pmb->phydro->hbvar.ReceiveAndSetBoundariesWithWait();
-          pbval->ClearBoundary(BoundaryCommSubset::gr_amr);
+          pbval->ClearBoundarySubset(BoundaryCommSubset::gr_amr,
+                                     pbval->bvars_main_int);
           pmb->phydro->hbvar.SwapHydroQuantity(pmb->phydro->u,
                                                HydroBoundaryQuantity::cons);
         }
@@ -1479,7 +1496,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
         pmb = pmb_array[i];
         pbval = pmb->pbval, ph = pmb->phydro, pf = pmb->pfield, ps = pmb->pscalars;
         if (multilevel)
-          pbval->ProlongateBoundaries(time, 0.0);
+          pbval->ProlongateBoundaries(time, 0.0, pbval->bvars_main_int);
 
         int il = pmb->is, iu = pmb->ie,
             jl = pmb->js, ju = pmb->je,
@@ -1533,7 +1550,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
         if (NSCALARS > 0)
           ps->sbvar.var_cc = &(ps->r);
 
-        pbval->ApplyPhysicalBoundaries(time, 0.0);
+        pbval->ApplyPhysicalBoundaries(time, 0.0, pbval->bvars_main_int);
       }
 
       // Calc initial diffusion coefficients
@@ -1777,7 +1794,8 @@ void Mesh::CorrectMidpointInitialCondition(std::vector<MeshBlock*> &pmb_array, i
       pbval->ComputeShear(time);
     }
     // no need to re-SetupPersistentMPI() the MPI requests for boundary values
-    pbval->StartReceiving(BoundaryCommSubset::mesh_init);
+    pbval->StartReceivingSubset(BoundaryCommSubset::mesh_init,
+                                pbval->bvars_main_int);
   }
 
 #pragma omp for private(pmb,pbval)
@@ -1807,7 +1825,8 @@ void Mesh::CorrectMidpointInitialCondition(std::vector<MeshBlock*> &pmb_array, i
     if (SHEARING_BOX) {
       pmb->phydro->hbvar.AddHydroShearForInit();
     }
-    pbval->ClearBoundary(BoundaryCommSubset::mesh_init);
+    pbval->ClearBoundarySubset(BoundaryCommSubset::mesh_init,
+                               pbval->bvars_main_int);
   } // end second exchange of ghost cells
   return;
 }

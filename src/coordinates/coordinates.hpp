@@ -126,6 +126,9 @@ class Coordinates {
   virtual void AddCoordTermsDivergence(const Real dt, const AthenaArray<Real> *flux,
                              const AthenaArray<Real> &prim, const AthenaArray<Real> &bcc,
                              AthenaArray<Real> &u);
+  virtual void AddCoordTermsDivergence_STS(const Real dt, int stage,
+                             const AthenaArray<Real> *flux,
+                             AthenaArray<Real> &u, AthenaArray<Real> &flux_div);
 
   // ...to determine if index is a pole
   bool IsPole(int j);
@@ -359,6 +362,9 @@ class Cylindrical : public Coordinates {
   void AddCoordTermsDivergence(const Real dt, const AthenaArray<Real> *flux,
                      const AthenaArray<Real> &prim, const AthenaArray<Real> &bcc,
                      AthenaArray<Real> &u) final;
+  void AddCoordTermsDivergence_STS(const Real dt, int stage,
+                     const AthenaArray<Real> *flux,
+                     AthenaArray<Real> &u, AthenaArray<Real> &flux_div) final;
 
   // functions to make coordinate transformations.
   void CartesianToMeshCoords(Real x, Real y, Real z, Real& x1, Real& x2, Real& x3) const;
@@ -430,6 +436,9 @@ class SphericalPolar : public Coordinates {
   void AddCoordTermsDivergence(const Real dt, const AthenaArray<Real> *flux,
                      const AthenaArray<Real> &prim, const AthenaArray<Real> &bcc,
                      AthenaArray<Real> &u) final;
+  void AddCoordTermsDivergence_STS(const Real dt, int stage,
+                     const AthenaArray<Real> *flux,
+                     AthenaArray<Real> &u, AthenaArray<Real> &flux_div) final;
 
   // functions to make coordinate transformations.
   void CartesianToMeshCoords(Real x, Real y, Real z, Real& x1, Real& x2, Real& x3) const;
