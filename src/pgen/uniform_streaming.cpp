@@ -38,9 +38,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         phydro->u(IM1,k,j,i) = ux0;
         phydro->u(IM2,k,j,i) = uy0;
         phydro->u(IM3,k,j,i) = uz0;
-        phydro->u(IEN,k,j,i) = 1.0 / (peos->GetGamma() - 1.0);
       }
     }
+  }
+  if (NON_BAROTROPIC_EOS) {
+    for (int k = ks; k <= ke; ++k)
+      for (int j = js; j <= je; ++j)
+        for (int i = is; i <= ie; ++i)
+          phydro->u(IEN,k,j,i) = 1.0 / (peos->GetGamma() - 1.0);
   }
 
   // Get the dust-to-gas ratio and the velocity of the particles.
