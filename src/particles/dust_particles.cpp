@@ -162,9 +162,9 @@ DustParticles::~DustParticles() {
 AthenaArray<Real> DustParticles::GetVelocityField() const {
   AthenaArray<Real> vel(3, ppm->nx3_, ppm->nx2_, ppm->nx1_);
   for (int k = ppm->ks; k <= ppm->ke; ++k)
-    for (int j = ppm->ks; j <= ppm->ke; ++j)
-      for (int i = ppm->ks; i <= ppm->ke; ++i) {
-        Real rho = ppm->weight(k,j,i);
+    for (int j = ppm->js; j <= ppm->je; ++j)
+      for (int i = ppm->is; i <= ppm->ie; ++i) {
+        Real rho(ppm->weight(k,j,i));
         rho = (rho > 0.0) ? rho : 1.0;
         vel(0,k,j,i) = ppm->meshaux(imom1,k,j,i) / rho;
         vel(1,k,j,i) = ppm->meshaux(imom2,k,j,i) / rho;
