@@ -36,9 +36,8 @@
 //  \brief Cycles over all MeshBlocks and writes data to a single restart file.
 
 void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_write) {
-  MeshBlock *pmb;
   IOWrapper resfile;
-  IOWrapperSizeT listsize, headeroffset, datasize;
+  IOWrapperSizeT listsize, headeroffset;
 
   // create single output filename:"file_basename"+"."+XXXXX+".rst",
   // where XXXXX = 5-digit file_number
@@ -78,25 +77,22 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
   for (int n=0; n<pm->nreal_user_mesh_data_; n++)
     udsize += pm->ruser_mesh_data[n].GetSizeInBytes();
 
-  headeroffset = sbuf.size()*sizeof(char) + 3*sizeof(int)+sizeof(RegionSize)
-                 + 2*sizeof(Real)+sizeof(IOWrapperSizeT)+udsize;
-  // the size of an element of the ID and cost list
-  listsize = sizeof(LogicalLocation)+sizeof(double);
+  headeroffset = sbuf.size()*sizeof(char)
+               + 3*sizeof(int) + 2*sizeof(Real) + sizeof(RegionSize) + udsize;
+  // the size of an element of the ID, cost list, and offset
+  listsize = sizeof(LogicalLocation) + sizeof(double) + sizeof(IOWrapperSizeT);
   // the size of each MeshBlock
   int nbtotal = pm->nbtotal;
   int myns = pm->nslist[Globals::my_rank];
   int mynb = pm->nblist[Globals::my_rank];
 
   // construct the size and offset lists
-  IOWrapperSizeT *sizelist = new IOWrapperSizeT[nbtotal];
-  pmb=pm->pblock;
-  while (pmb!=nullptr) {
-    sizelist[pmb->gid]=pmb->GetBlockSizeInBytes();
-    pmb=pmb->next;
-  }
+  IOWrapperSizeT *offset = new IOWrapperSizeT[nbtotal];
+  for (int b = 0; b < mynb; ++b)
+    offset[myns+b] = pm->my_blocks(b)->GetBlockSizeInBytes();
 #ifdef MPI_PARALLEL
   // collect the size list - assuming IOWrapperSizeT is 64bit integer
-  MPI_Allgatherv(MPI_IN_PLACE, mynb, MPI_UINT64_T, sizelist, pm->nblist, pm->nslist,
+  MPI_Allgatherv(MPI_IN_PLACE, mynb, MPI_UINT64_T, offset, pm->nblist, pm->nslist,
                  MPI_UINT64_T, MPI_COMM_WORLD);
 #endif
 
@@ -132,47 +128,45 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
     }
   }
 
-  // Loop over MeshBlocks and pack the meta data
-  // allocate memory for the metadata of each MeshBlock
-  IOWrapperSizeT mdsize=sizeof(LogicalLocation)+sizeof(double)+sizeof(IOWrapperSizeT);
-  char *mbmetadata = new char[mdsize*mynb];
+  // allocate memory for the ID list
+  char *idlist = new char[listsize*mynb];
 
   // Loop over MeshBlocks and pack the meta data
-  int os = 0;
-  pmb = pm->pblock;
-  while (pmb != nullptr) {
-    std::memcpy(&(mbmetadata[os]), &(pmb->loc), sizeof(LogicalLocation));
+  int os=0;
+  for (int b = 0; b < mynb; ++b) {
+    MeshBlock *pmb = pm->my_blocks(b);
+    std::memcpy(&(idlist[os]), &(pmb->loc), sizeof(LogicalLocation));
     os += sizeof(LogicalLocation);
-    std::memcpy(&(mbmetadata[os]), &(pmb->cost_), sizeof(double));
+    std::memcpy(&(idlist[os]), &(pmb->cost_), sizeof(double));
     os += sizeof(double);
-    std::memcpy(&(mbmetadata[os]), &(sizelist[pmb->gid]), sizeof(IOWrapperSizeT));
+    std::memcpy(&(idlist[os]), &(offset[myns+b]), sizeof(IOWrapperSizeT));
     os += sizeof(IOWrapperSizeT);
-    pmb = pmb->next;
   }
 
   // write the ID list collectively
-  IOWrapperSizeT myoffset = headeroffset+mdsize*myns;
-  resfile.Write_at_all(mbmetadata, mdsize, mynb, myoffset);
+  IOWrapperSizeT myoffset = headeroffset + listsize*myns;
+  resfile.Write_at_all(idlist, listsize, mynb, myoffset);
 
-  delete [] mbmetadata;
+  // deallocate the idlist array
+  delete [] idlist;
 
   // calculate the size and offset for this rank
-  myoffset = headeroffset+mdsize*nbtotal;
-  for (int n=0; n<myns; n++)
-    myoffset += sizelist[n];
-  IOWrapperSizeT mysize=0;
-  for (int n=myns; n<myns+mynb; n++)
-    mysize += sizelist[n];
-
-  delete [] sizelist;
+  myoffset = headeroffset + listsize*nbtotal;
+  for (int n = 0; n < myns; n++)
+    myoffset += offset[n];
+  IOWrapperSizeT mysize = 0;
+  for (int n = myns; n < myns+mynb; n++)
+    mysize += offset[n];
+  delete [] offset;
 
   // allocate memory for the output of this rank
   char *data = new char[mysize];
   char *pdata = data;
 
   // Loop over MeshBlocks and pack the data
-  pmb = pm->pblock;
-  while (pmb != nullptr) {
+  for (int b = 0; b < mynb; ++b) {
+    MeshBlock *pmb = pm->my_blocks(b);
+
     // NEW_OUTPUT_TYPES: add output of additional physics to restarts here also update
     // MeshBlock::GetBlockSizeInBytes accordingly and MeshBlock constructor for restarts.
 
@@ -227,7 +221,6 @@ void RestartOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool force_wr
                   pmb->ruser_meshblock_data[n].GetSizeInBytes());
       pdata += pmb->ruser_meshblock_data[n].GetSizeInBytes();
     }
-    pmb = pmb->next;
   }
 
   // now write restart data in parallel

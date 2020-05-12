@@ -40,10 +40,8 @@ void DustParticles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
   // Assign the particles onto the mesh.
   Particles::FindDensityOnMesh(pm, include_momentum);
 
-  ParticleMesh *ppm;
-  MeshBlock *pmb(pm->pblock);
-  while (pmb != NULL) {
-    ppm = pmb->ppar->ppm;
+  for (int b = 0; b < pm->nblocal; ++b) {
+    ParticleMesh *ppm(pm->my_blocks(b)->ppar->ppm);
 
     // Find the mass density.
     for (int k = ppm->ks; k <= ppm->ke; ++k)
@@ -61,8 +59,6 @@ void DustParticles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
             ppm->meshaux(imom3,k,j,i) *= mass;
           }
     }
-
-    pmb = pmb->next;
   }
 }
 

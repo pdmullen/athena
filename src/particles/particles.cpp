@@ -176,12 +176,8 @@ void Particles::PostInitialize(Mesh *pm, ParameterInput *pin) {
   ProcessNewParticles(pm);
 
   // Set position indices.
-  MeshBlock *pmb = pm->pblock;
-  while (pmb != NULL) {
-    Particles *ppar = pmb->ppar;
-    ppar->SetPositionIndices();
-    pmb = pmb->next;
-  }
+  for (int b = 0; b < pm->nblocal; ++b)
+    pm->my_blocks(b)->ppar->SetPositionIndices();
 }
 
 //--------------------------------------------------------------------------------------
@@ -194,14 +190,12 @@ void Particles::PostInitialize(Mesh *pm, ParameterInput *pin) {
 
 void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
   // Assign particle properties to mesh and send boundary.
-  ParticleMesh *ppm;
-  int nblocks = 0;
-  MeshBlock *pmb = pm->pblock;
-  while (pmb != NULL) {
-    ++nblocks;
-    ppm = pmb->ppar->ppm;
+  int nblocks(pm->nblocal);
+  for (int b = 0; b < nblocks; ++b) {
+    const MeshBlock *pmb(pm->my_blocks(b));
+    const Particles *ppar(pmb->ppar);
+    ParticleMesh *ppm(ppar->ppm);
     ppm->StartReceiving();
-    const Particles *ppar = pmb->ppar;
     if (include_momentum) {
       AthenaArray<Real> vp, vp1, vp2, vp3;
       vp.NewAthenaArray(3, ppar->npar);
@@ -217,17 +211,16 @@ void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
       ppm->AssignParticlesToMeshAux(ppar->realprop, 0, ppm->iweight, 0);
     }
     ppm->SendBoundary();
-    pmb = pmb->next;
   }
 
   std::vector<bool> completed(nblocks, false);
   bool pending = true;
   while (pending) {
     pending = false;
-    pmb = pm->pblock;
     for (int i = 0; i < nblocks; ++i) {
-      Coordinates *pc = pmb->pcoord;
-      ppm = pmb->ppar->ppm;
+      const MeshBlock *pmb(pm->my_blocks(i));
+      Coordinates *pc(pmb->pcoord);
+      ParticleMesh *ppm(pmb->ppar->ppm);
       if (!completed[i]) {
         // Finalize boundary communications.
         if ((completed[i] = ppm->ReceiveBoundary())) {
@@ -256,7 +249,6 @@ void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
           pending = true;
         }
       }
-      pmb = pmb->next;
     }
   }
 }
@@ -275,11 +267,11 @@ void Particles::FindHistoryOutput(Mesh *pm, Real data_sum[], int pos) {
 
   // Sum over each meshblock.
   Real vp1, vp2, vp3;
-  MeshBlock *pmb = pm->pblock;
-  while (pmb != NULL) {
-    const Particles *ppar = pmb->ppar;
+  for (int b = 0; b < pm->nblocal; ++b) {
+    const MeshBlock *pmb(pm->my_blocks(b));
+    const Particles *ppar(pmb->ppar);
     np += ppar->npar;
-    const Coordinates *pcoord = pmb->pcoord;
+    const Coordinates *pcoord(pmb->pcoord);
     for (int k = 0; k < ppar->npar; ++k) {
       pcoord->CartesianToMeshCoordsVector(ppar->xp(k), ppar->yp(k), ppar->zp(k),
           ppar->vpx(k), ppar->vpy(k), ppar->vpz(k), vp1, vp2, vp3);
@@ -290,7 +282,6 @@ void Particles::FindHistoryOutput(Mesh *pm, Real data_sum[], int pos) {
       sum[4] += vp2 * vp2;
       sum[5] += vp3 * vp3;
     }
-    pmb = pmb->next;
   }
 
   // Assign the values to output variables.
@@ -318,12 +309,9 @@ void Particles::GetHistoryOutputNames(std::string output_names[]) {
 //  \brief returns total number of particles (from all processes).
 
 int Particles::GetTotalNumber(Mesh *pm) {
-  int npartot = 0;
-  MeshBlock *pmb = pm->pblock;
-  while (pmb != NULL) {
-    npartot += pmb->ppar->npar;
-    pmb = pmb->next;
-  }
+  int npartot(0);
+  for (int b = 0; b < pm->nblocal; ++b)
+    npartot += pm->my_blocks(b)->ppar->npar;
 #ifdef MPI_PARALLEL
   MPI_Allreduce(MPI_IN_PLACE, &npartot, 1, MPI_INT, MPI_SUM, my_comm);
 #endif
@@ -810,29 +798,26 @@ bool Particles::ReceiveParticleMesh(int stage) {
 
 void Particles::ProcessNewParticles(Mesh *pmesh) {
   // Count new particles.
-  const int nbtotal = pmesh->nbtotal;
-  AthenaArray<int> nnewpar;
-  nnewpar.NewAthenaArray(nbtotal);
-  MeshBlock *pmb = pmesh->pblock;
-  while (pmb != NULL) {
-    nnewpar(pmb->gid) = pmb->ppar->CountNewParticles();
-    pmb = pmb->next;
+  const int nbtotal(pmesh->nbtotal), nblocks(pmesh->nblocal);
+  std::vector<int> nnewpar(nbtotal, 0);
+  for (int b = 0; b < nblocks; ++b) {
+    const MeshBlock *pmb(pmesh->my_blocks(b));
+    nnewpar[pmb->gid] = pmb->ppar->CountNewParticles();
   }
 #ifdef MPI_PARALLEL
-  MPI_Allreduce(MPI_IN_PLACE, &nnewpar(0), nbtotal, MPI_INT, MPI_MAX, my_comm);
+  MPI_Allreduce(MPI_IN_PLACE, &nnewpar[0], nbtotal, MPI_INT, MPI_MAX, my_comm);
 #endif
 
   // Make the counts cumulative.
   for (int i = 1; i < nbtotal; ++i)
-    nnewpar(i) += nnewpar(i-1);
+    nnewpar[i] += nnewpar[i-1];
 
   // Set particle IDs.
-  pmb = pmesh->pblock;
-  while (pmb != NULL) {
-    pmb->ppar->SetNewParticleID(idmax + (pmb->gid > 0 ? nnewpar(pmb->gid - 1) : 0));
-    pmb = pmb->next;
+  for (int b = 0; b < nblocks; ++b) {
+    const MeshBlock *pmb(pmesh->my_blocks(b));
+    pmb->ppar->SetNewParticleID(idmax + (pmb->gid > 0 ? nnewpar[pmb->gid - 1] : 0));
   }
-  idmax += nnewpar(nbtotal - 1);
+  idmax += nnewpar[nbtotal - 1];
 }
 
 //--------------------------------------------------------------------------------------
@@ -1227,14 +1212,13 @@ void Particles::PackParticlesForRestart(char *&pdata) {
 //  \brief outputs the particle data in tabulated format.
 
 void Particles::FormattedTableOutput(Mesh *pm, OutputParameters op) {
-  MeshBlock *pmb = pm->pblock;
-  Particles *ppar;
   std::stringstream fname, msg;
   std::ofstream os;
 
   // Loop over MeshBlocks
-  while (pmb != NULL) {
-    ppar = pmb->ppar;
+  for (int b = 0; b < pm->nblocal; ++b) {
+    const MeshBlock *pmb(pm->my_blocks(b));
+    const Particles *ppar(pmb->ppar);
 
     // Create the filename.
     fname << op.file_basename
@@ -1252,7 +1236,7 @@ void Particles::FormattedTableOutput(Mesh *pm, OutputParameters op) {
     }
 
     // Write the time.
-    os << std::setprecision(18);
+    os << std::scientific << std::showpoint << std::setprecision(18);
     os << "# Athena++ particle data at time = " << pm->time << std::endl;
 
     // Write the particle data in the meshblock.
@@ -1264,7 +1248,6 @@ void Particles::FormattedTableOutput(Mesh *pm, OutputParameters op) {
     // Close the file and get the next meshblock.
     os.close();
     fname.str("");
-    pmb = pmb->next;
   }
 }
 
