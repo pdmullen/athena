@@ -7,7 +7,8 @@
 //  \brief tests one particle.
 
 // C++ standard libraries
-#include <cmath>  // round()
+#include <cmath>    // round()
+#include <sstream>  // stringstream
 
 // Athena++ headers
 #include "../athena.hpp"
@@ -24,6 +25,14 @@
 //======================================================================================
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  // Sanity check.
+  if (!PARTICLES) {
+    std::stringstream msg;
+    msg << "### FATAL ERROR in function [MeshBlock::ProblemGenerator]" << std::endl
+        << "Dust particles were not enabled at configuration. " << std::endl;
+    ATHENA_ERROR(msg);
+  }
+
   // Get the (uniform) velocity of the gas.
   Real ux0, uy0, uz0;
   ux0 = pin->GetOrAddReal("problem", "ux0", 0.0);
