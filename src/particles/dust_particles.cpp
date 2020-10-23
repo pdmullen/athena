@@ -4,7 +4,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file dust_particles.cpp
-//  \brief implements functions in the DustParticles class
+//! \brief implements functions in the DustParticles class
 
 // C++ headers
 #include <algorithm>  // min()
@@ -31,10 +31,13 @@ Real DustParticles::mass = 1.0, DustParticles::taus0 = 0.0;
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum)
-//  \brief finds the mass density of particles on the mesh.  If include_momentum is
-//    true, the momentum density field is also included.
-// Postcondition: ppm->weight becomes the density in each cell, and if include_momentum
-//    is true, ppm->meshaux(imom1:imom3,:,:,:) becomes the momentum density.
+//! \brief finds the mass density of particles on the mesh.  If include_momentum is
+//!   true, the momentum density field is also included.
+//!
+//! \note
+//!   Postcondition:
+//!   ppm->weight becomes the density in each cell, and if include_momentum
+//!   is true, ppm->meshaux(imom1:imom3,:,:,:) becomes the momentum density.
 
 void DustParticles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
   // Assign the particles onto the mesh.
@@ -64,7 +67,7 @@ void DustParticles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::Initialize(Mesh *pm, ParameterInput *pin)
-//  \brief initializes the class.
+//! \brief initializes the class.
 
 void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
   // Initialize first the parent class.
@@ -104,7 +107,7 @@ void DustParticles::Initialize(Mesh *pm, ParameterInput *pin) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::SetOneParticleMass(Real new_mass)
-//  \brief sets the mass of each particle.
+//! \brief sets the mass of each particle.
 
 void DustParticles::SetOneParticleMass(Real new_mass) {
   pinput->SetReal("particles", "mass", mass = new_mass);
@@ -112,7 +115,7 @@ void DustParticles::SetOneParticleMass(Real new_mass) {
 
 //--------------------------------------------------------------------------------------
 //! \fn DustParticles::DustParticles(MeshBlock *pmb, ParameterInput *pin)
-//  \brief constructs a DustParticles instance.
+//! \brief constructs a DustParticles instance.
 
 DustParticles::DustParticles(MeshBlock *pmb, ParameterInput *pin)
   : Particles(pmb, pin) {
@@ -132,7 +135,7 @@ DustParticles::DustParticles(MeshBlock *pmb, ParameterInput *pin)
 
 //--------------------------------------------------------------------------------------
 //! \fn DustParticles::~DustParticles()
-//  \brief destroys a DustParticles instance.
+//! \brief destroys a DustParticles instance.
 
 DustParticles::~DustParticles() {
   wx.DeleteAthenaArray();
@@ -151,9 +154,12 @@ DustParticles::~DustParticles() {
 
 //--------------------------------------------------------------------------------------
 //! \fn AthenaArray<Real> DustParticles::GetVelocityField()
-//  \brief returns the particle velocity on the mesh.
-// Precondition: The particle properties on mesh must be assigned using the class method
-//   DustParticles::FindDensityOnMesh().
+//! \brief returns the particle velocity on the mesh.
+//!
+//! \note
+//!   Precondition:
+//!   The particle properties on mesh must be assigned using the class method
+//!   DustParticles::FindDensityOnMesh().
 
 AthenaArray<Real> DustParticles::GetVelocityField() const {
   AthenaArray<Real> vel(3, ppm->nx3_, ppm->nx2_, ppm->nx1_);
@@ -171,7 +177,7 @@ AthenaArray<Real> DustParticles::GetVelocityField() const {
 
 //--------------------------------------------------------------------------------------
 //! \fn Real DustParticles::NewBlockTimeStep();
-//  \brief returns the time step required by particles in the block.
+//! \brief returns the time step required by particles in the block.
 
 Real DustParticles::NewBlockTimeStep() {
   // Run first the parent class.
@@ -203,7 +209,7 @@ Real DustParticles::NewBlockTimeStep() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::AssignShorthands()
-//  \brief assigns shorthands by shallow coping slices of the data.
+//! \brief assigns shorthands by shallow coping slices of the data.
 
 void DustParticles::AssignShorthands() {
   Particles::AssignShorthands();
@@ -215,7 +221,7 @@ void DustParticles::AssignShorthands() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::SourceTerms()
-//  \brief adds acceleration to particles.
+//! \brief adds acceleration to particles.
 
 void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsrc) {
   if (dragforce) {
@@ -226,7 +232,8 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
     const Coordinates *pc = pmy_block->pcoord;
     for (int k = 0; k < npar; ++k) {
       Real x1, x2, x3;
-      // TODO(ccyang): using (xp0, yp0, zp0) is a temporary hack.
+      //! \todo (ccyang):
+      //! - using (xp0, yp0, zp0) is a temporary hack.
       pc->CartesianToMeshCoords(xp0(k), yp0(k), zp0(k), x1, x2, x3);
       pc->MeshCoordsToCartesianVector(x1, x2, x3, wx(k), wy(k), wz(k),
                                                   wx(k), wy(k), wz(k));
@@ -237,7 +244,8 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
       // Variable stopping time
       UserStoppingTime(t, dt, meshsrc);
       for (int k = 0; k < npar; ++k) {
-        // TODO(ccyang): This is a temporary hack; to be fixed.
+        //! \todo (ccyang):
+        //! - This is a temporary hack; to be fixed.
         Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
         //
         Real c = dt / taus(k);
@@ -255,7 +263,8 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
       // Constant stopping time
       Real c = dt / taus0;
       for (int k = 0; k < npar; ++k) {
-        // TODO(ccyang): This is a temporary hack; to be fixed.
+        //! \todo (ccyang):
+        //! - This is a temporary hack; to be fixed.
         Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
         //
         wx(k) = c * (vpx(k) - wx(k));
@@ -278,7 +287,8 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
     }
   } else {
     for (int k = 0; k < npar; ++k) {
-      // TODO(ccyang): This is a temporary hack; to be fixed.
+      //! \todo (ccyang):
+      //! - This is a temporary hack; to be fixed.
       Real tmpx = vpx(k), tmpy = vpy(k), tmpz = vpz(k);
       vpx(k) = vpx0(k); vpy(k) = vpy0(k); vpz(k) = vpz0(k);
       vpx0(k) = tmpx; vpy0(k) = tmpy; vpz0(k) = tmpz;
@@ -294,8 +304,8 @@ void DustParticles::SourceTerms(Real t, Real dt, const AthenaArray<Real>& meshsr
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::UserSourceTerms(Real t, Real dt,
-//                                          const AthenaArray<Real>& meshsrc)
-//  \brief adds additional source terms to particles, overloaded by the user.
+//!                                         const AthenaArray<Real>& meshsrc)
+//! \brief adds additional source terms to particles, overloaded by the user.
 
 void __attribute__((weak)) DustParticles::UserSourceTerms(
     Real t, Real dt, const AthenaArray<Real>& meshsrc) {
@@ -303,8 +313,8 @@ void __attribute__((weak)) DustParticles::UserSourceTerms(
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::UserStoppingTime(Real t, Real dt,
-//                                           const AthenaArray<Real>& meshsrc)
-//  \brief assigns time-dependent stopping time to each particle, overloaded by the user.
+//!                                          const AthenaArray<Real>& meshsrc)
+//! \brief assigns time-dependent stopping time to each particle, overloaded by the user.
 
 void __attribute__((weak)) DustParticles::UserStoppingTime(
     Real t, Real dt, const AthenaArray<Real>& meshsrc) {
@@ -312,8 +322,8 @@ void __attribute__((weak)) DustParticles::UserStoppingTime(
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::ReactToMeshAux(
-//               Real t, Real dt, const AthenaArray<Real>& meshsrc)
-//  \brief Reacts to meshaux before boundary communications.
+//!              Real t, Real dt, const AthenaArray<Real>& meshsrc)
+//! \brief Reacts to meshaux before boundary communications.
 
 void DustParticles::ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& meshsrc) {
   // Nothing to do if no back reaction.
@@ -322,7 +332,8 @@ void DustParticles::ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& mes
   // Transform the momentum change in mesh coordinates.
   const Coordinates *pc = pmy_block->pcoord;
   for (int k = 0; k < npar; ++k)
-    // TODO(ccyang): using (xp0, yp0, zp0) is a temporary hack.
+    //! \todo (ccyang):
+    //! - using (xp0, yp0, zp0) is a temporary hack.
     pc->CartesianToMeshCoordsVector(xp0(k), yp0(k), zp0(k),
         mass * wx(k), mass * wy(k), mass * wz(k), wx(k), wy(k), wz(k));
 
@@ -332,8 +343,8 @@ void DustParticles::ReactToMeshAux(Real t, Real dt, const AthenaArray<Real>& mes
 
 //--------------------------------------------------------------------------------------
 //! \fn void DustParticles::DepositToMesh(Real t, Real dt,
-//               const AthenaArray<Real>& meshsrc, AthenaArray<Real>& meshdst);
-//  \brief Deposits meshaux to Mesh.
+//!              const AthenaArray<Real>& meshsrc, AthenaArray<Real>& meshdst);
+//! \brief Deposits meshaux to Mesh.
 
 void DustParticles::DepositToMesh(
          Real t, Real dt, const AthenaArray<Real>& meshsrc, AthenaArray<Real>& meshdst) {

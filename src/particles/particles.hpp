@@ -5,7 +5,7 @@
 // Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code contributors
 //======================================================================================
 //! \file particles.hpp
-//  \brief defines classes for particle dynamics.
+//! \brief defines classes for particle dynamics.
 //======================================================================================
 
 // C/C++ Standard Libraries
@@ -42,7 +42,7 @@ struct Neighbor {
 
 //--------------------------------------------------------------------------------------
 //! \class Particles
-//  \brief defines the bass class for all implementations of particles.
+//! \brief defines the base class for all implementations of particles.
 
 class Particles {
 friend class MeshBlock;  // Make writing initial conditions possible.
@@ -63,7 +63,7 @@ friend class ParticleMesh;
   static int GetTotalNumber(Mesh *pm);
 
   // Class constant
-  static const int NHISTORY = 7;  // number of variables in history output
+  static const int NHISTORY = 7;  //!> number of variables in history output
 
   // Constructor
   Particles(MeshBlock *pmb, ParameterInput *pin);
@@ -101,12 +101,13 @@ friend class ParticleMesh;
   static int AddWorkingArray();
 
   // Class variables
-  static bool initialized;  // whether or not the class is initialized
-  static int nint, nreal;   // numbers of integer and real particle properties
-  static int naux;          // number of auxiliary particle properties
-  static int nwork;         // number of working arrays for particles
+  static bool initialized;  //!> whether or not the class is initialized
+  static int nint;          //!> numbers of integer particle properties
+  static int nreal;         //!> numbers of real particle properties
+  static int naux;          //!> number of auxiliary particle properties
+  static int nwork;         //!> number of working arrays for particles
 
-  static int ipid;                 // index for the particle ID
+  static int ipid;                 //!> index for the particle ID
   static int ixp, iyp, izp;        // indices for the position components
   static int ivpx, ivpy, ivpz;     // indices for the velocity components
 
@@ -117,40 +118,40 @@ friend class ParticleMesh;
 
   static int imom1, imom2, imom3;  // indices for momentum components on mesh
 
-  static Real cfl_par;  // CFL number for particles
+  static Real cfl_par;  //!> CFL number for particles
 
   static ParameterInput *pinput;
 
   // Instance methods
-  virtual void AssignShorthands();  // Needs to be called everytime
-                                    // intprop, realprop, & auxprop are resized
-                                    // Be sure to call back when derived.
+  virtual void AssignShorthands();  //!> Needs to be called everytime
+                                    //!> intprop, realprop, & auxprop are resized
+                                    //!> Be sure to call back when derived.
 
-  void UpdateCapacity(int new_nparmax);  // Change the capacity of particle arrays
+  void UpdateCapacity(int new_nparmax);  //!> Change the capacity of particle arrays
 
   // Instance variables
-  int npar;     // number of particles
-  int nparmax;  // maximum number of particles per meshblock
+  int npar;     //!> number of particles
+  int nparmax;  //!> maximum number of particles per meshblock
 
                                // Data attached to the particles:
-  AthenaArray<int> intprop;   //   integer properties
-  AthenaArray<Real> realprop;  //   real properties
-  AthenaArray<Real> auxprop;   //   auxiliary properties (communicated when
-                               //     particles moving to another meshblock)
-  AthenaArray<Real> work;      //   working arrays (not communicated)
+  AthenaArray<int> intprop;    //!>   integer properties
+  AthenaArray<Real> realprop;  //!>   real properties
+  AthenaArray<Real> auxprop;   //!>   auxiliary properties (communicated when
+                               //!>     particles moving to another meshblock)
+  AthenaArray<Real> work;      //!>   working arrays (not communicated)
 
-  ParticleMesh *ppm;  // ptr to particle-mesh
+  ParticleMesh *ppm;  //!> ptr to particle-mesh
 
                                        // Shorthands:
-  AthenaArray<int> pid;                //   particle ID
+  AthenaArray<int> pid;                //!>   particle ID
   AthenaArray<Real> xp, yp, zp;        //   position
   AthenaArray<Real> vpx, vpy, vpz;     //   velocity
   AthenaArray<Real> xi1, xi2, xi3;     //   position indices in local meshblock
   AthenaArray<Real> xp0, yp0, zp0;     //   beginning position
   AthenaArray<Real> vpx0, vpy0, vpz0;  //   beginning velocity
 
-  MeshBlock* pmy_block;  // MeshBlock pointer
-  Mesh* pmy_mesh;        // Mesh pointer
+  MeshBlock* pmy_block;  //!> MeshBlock pointer
+  Mesh* pmy_mesh;        //!> Mesh pointer
 
  private:
   // Class method
@@ -186,19 +187,19 @@ friend class ParticleMesh;
   bool active1_, active2_, active3_;  // active dimensions
 
   // MeshBlock-to-MeshBlock communication:
-  BoundaryValues *pbval_;            // ptr to my BoundaryValues
-  Neighbor neighbor_[3][3][3];       // links to neighbors
-  ParticleBuffer recv_[56];          // particle receive buffers
-  enum BoundaryStatus bstatus_[56];  // boundary status
+  BoundaryValues *pbval_;            //!> ptr to my BoundaryValues
+  Neighbor neighbor_[3][3][3];       //!> links to neighbors
+  ParticleBuffer recv_[56];          //!> particle receive buffers
+  enum BoundaryStatus bstatus_[56];  //!> boundary status
 #ifdef MPI_PARALLEL
-  static MPI_Comm my_comm;   // my MPI communicator
-  ParticleBuffer send_[56];  // particle send buffers
+  static MPI_Comm my_comm;   //!> my MPI communicator
+  ParticleBuffer send_[56];  //!> particle send buffers
 #endif
 };
 
 //--------------------------------------------------------------------------------------
 //! \fn Real Particles::GetMaximumWeight()
-//  \brief returns the maximum weight on the mesh.
+//! \brief returns the maximum weight on the mesh.
 
 inline Real Particles::GetMaximumWeight() const {
   return ppm->FindMaximumWeight();
@@ -206,8 +207,8 @@ inline Real Particles::GetMaximumWeight() const {
 
 //--------------------------------------------------------------------------------------
 //! \class DustParticles
-//  \brief defines the class for dust particles that interact with the gas via drag
-//         force.
+//! \brief defines the class for dust particles that interact with the gas via drag
+//!        force.
 
 class DustParticles : public Particles {
 friend class MeshBlock;
@@ -222,7 +223,7 @@ friend class MeshBlock;
   static Real GetOneParticleMass();
   static Real GetStoppingTime();
 
-  // Constructor
+  //!Constructor
   DustParticles(MeshBlock *pmb, ParameterInput *pin);
 
   // Destructor
@@ -237,17 +238,17 @@ friend class MeshBlock;
 
  private:
   // Class variables
-  static bool initialized;    // whether or not the class is initialized
-  static bool backreaction;   // turn on/off back reaction
-  static bool dragforce;      // turn on/off drag force
-  static bool variable_taus;  // whether or not the stopping time is variable
+  static bool initialized;    //!> whether or not the class is initialized
+  static bool backreaction;   //!> turn on/off back reaction
+  static bool dragforce;      //!> turn on/off drag force
+  static bool variable_taus;  //!> whether or not the stopping time is variable
 
   static int iwx, iwy, iwz;         // indices for working arrays
   static int idpx1, idpx2, idpx3;   // indices for momentum change
-  static int itaus;                 // index for stopping time
+  static int itaus;                 //!> index for stopping time
 
-  static Real mass;   // mass of each particle
-  static Real taus0;  // constant/default stopping time (in code units)
+  static Real mass;   //!> mass of each particle
+  static Real taus0;  //!> constant/default stopping time (in code units)
 
   // Instance methods.
   void AssignShorthands();
@@ -267,7 +268,7 @@ friend class MeshBlock;
 
 //--------------------------------------------------------------------------------------
 //! \fn bool DustParticles::GetBackReaction()
-//  \brief returns if the back reaction of the drag is on or off.
+//! \brief returns if the back reaction of the drag is on or off.
 
 inline bool DustParticles::GetBackReaction() {
   return backreaction;
@@ -275,7 +276,7 @@ inline bool DustParticles::GetBackReaction() {
 
 //--------------------------------------------------------------------------------------
 //! \fn bool DustParticles::GetVariableTaus()
-//  \brief returns if the stopping time can be variable or not.
+//! \brief returns if the stopping time can be variable or not.
 
 inline bool DustParticles::GetVariableTaus() {
   return variable_taus;
@@ -283,7 +284,7 @@ inline bool DustParticles::GetVariableTaus() {
 
 //--------------------------------------------------------------------------------------
 //! \fn Real DustParticles::GetOneParticleMass()
-//  \brief returns the mass of each particle.
+//! \brief returns the mass of each particle.
 
 inline Real DustParticles::GetOneParticleMass() {
   return mass;
@@ -291,7 +292,7 @@ inline Real DustParticles::GetOneParticleMass() {
 
 //--------------------------------------------------------------------------------------
 //! \fn Real DustParticles::GetStoppingTime()
-//  \brief returns the stopping time of the drag.
+//! \brief returns the stopping time of the drag.
 
 inline Real DustParticles::GetStoppingTime() {
   return taus0;
@@ -299,9 +300,12 @@ inline Real DustParticles::GetStoppingTime() {
 
 //--------------------------------------------------------------------------------------
 //! \fn AthenaArray<Real> DustParticles::GetMassDensity()
-//  \brief returns the mass density of particles on the mesh.
-// Precondition: The particle properties on mesh must be assigned using the class method
-//   DustParticles::FindDensityOnMesh().
+//! \brief returns the mass density of particles on the mesh.
+//!
+//! \note
+//!  Precondition:
+//!  The particle properties on mesh must be assigned using the class method
+//!  DustParticles::FindDensityOnMesh().
 
 inline AthenaArray<Real> DustParticles::GetMassDensity() const {
   return ppm->weight;

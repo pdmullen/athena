@@ -4,7 +4,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file particles.cpp
-//  \brief implements functions in particle classes
+//! \brief implements functions in particle classes
 
 // C++ Standard Libraries
 #include <algorithm>
@@ -53,7 +53,7 @@ static int CheckSide(int xi, int xi1, int xi2);
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::AMRCoarseToFine(MeshBlock* pmbc, MeshBlock* pmbf)
-//  \brief load particles from a coarse meshblock to a fine meshblock.
+//! \brief load particles from a coarse meshblock to a fine meshblock.
 
 void Particles::AMRCoarseToFine(MeshBlock* pmbc, MeshBlock* pmbf) {
   // Initialization
@@ -90,7 +90,7 @@ void Particles::AMRCoarseToFine(MeshBlock* pmbc, MeshBlock* pmbf) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc)
-//  \brief load particles from a fine meshblock to a coarse meshblock.
+//! \brief load particles from a fine meshblock to a coarse meshblock.
 
 void Particles::AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc) {
   // Check the capacity.
@@ -114,7 +114,7 @@ void Particles::AMRFineToCoarse(MeshBlock* pmbf, MeshBlock* pmbc) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::Initialize(Mesh *pm, ParameterInput *pin)
-//  \brief initializes the class.
+//! \brief initializes the class.
 
 void Particles::Initialize(Mesh *pm, ParameterInput *pin) {
   if (initialized) return;
@@ -169,7 +169,7 @@ void Particles::Initialize(Mesh *pm, ParameterInput *pin) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::PostInitialize(Mesh *pm, ParameterInput *pin)
-//  \brief preprocesses the class after problem generator and before the main loop.
+//! \brief preprocesses the class after problem generator and before the main loop.
 
 void Particles::PostInitialize(Mesh *pm, ParameterInput *pin) {
   // Set particle IDs.
@@ -182,11 +182,14 @@ void Particles::PostInitialize(Mesh *pm, ParameterInput *pin) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum)
-//  \brief finds the number density of particles on the mesh.  If include_momentum is
-//    true, the momentum density field is also computed, assuming mass of each particle
-//    is unity.
-// Postcondition: ppm->weight becomes the density in each cell, and if include_momentum
-//    is true, ppm->meshaux(imom1:imom3,:,:,:) becomes the momentum density.
+//! \brief finds the number density of particles on the mesh.
+//!
+//!   If include_momentum is true, the momentum density field is also computed,
+//!   assuming mass of each particle is unity.
+//! \note
+//!   Postcondition: ppm->weight becomes the density in each cell, and
+//!   if include_momentum is true, ppm->meshaux(imom1:imom3,:,:,:)
+//!   becomes the momentum density.
 
 void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
   // Assign particle properties to mesh and send boundary.
@@ -255,8 +258,8 @@ void Particles::FindDensityOnMesh(Mesh *pm, bool include_momentum) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::FindHistoryOutput(Mesh *pm, Real data_sum[], int pos)
-//  \brief finds the data sums of history output from particles in my process and assign
-//    them to data_sum beginning at index pos.
+//! \brief finds the data sums of history output from particles in my process and assign
+//!   them to data_sum beginning at index pos.
 
 void Particles::FindHistoryOutput(Mesh *pm, Real data_sum[], int pos) {
   const int NSUM = NHISTORY - 1;
@@ -292,7 +295,7 @@ void Particles::FindHistoryOutput(Mesh *pm, Real data_sum[], int pos) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::GetHistoryOutputNames(std::string output_names[])
-//  \brief gets the names of the history output variables in history_output_names[].
+//! \brief gets the names of the history output variables in history_output_names[].
 
 void Particles::GetHistoryOutputNames(std::string output_names[]) {
   output_names[0] = "np";
@@ -306,7 +309,7 @@ void Particles::GetHistoryOutputNames(std::string output_names[]) {
 
 //--------------------------------------------------------------------------------------
 //! \fn int Particles::GetTotalNumber(Mesh *pm)
-//  \brief returns total number of particles (from all processes).
+//! \brief returns total number of particles (from all processes).
 
 int Particles::GetTotalNumber(Mesh *pm) {
   int npartot(0);
@@ -320,7 +323,7 @@ int Particles::GetTotalNumber(Mesh *pm) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::Particles(MeshBlock *pmb, ParameterInput *pin)
-//  \brief constructs a Particles instance.
+//! \brief constructs a Particles instance.
 
 Particles::Particles(MeshBlock *pmb, ParameterInput *pin) {
   // Point to the calling MeshBlock.
@@ -359,7 +362,7 @@ Particles::Particles(MeshBlock *pmb, ParameterInput *pin) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::~Particles()
-//  \brief destroys a Particles instance.
+//! \brief destroys a Particles instance.
 
 Particles::~Particles() {
   // Delete integer properties.
@@ -383,7 +386,7 @@ Particles::~Particles() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::ClearBoundary()
-//  \brief resets boundary for particle transportation.
+//! \brief resets boundary for particle transportation.
 
 void Particles::ClearBoundary() {
   for (int i = 0; i < pbval_->nneighbor; ++i) {
@@ -403,7 +406,7 @@ void Particles::ClearBoundary() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::ClearNeighbors()
-//  \brief clears links to neighbors.
+//! \brief clears links to neighbors.
 
 void Particles::ClearNeighbors() {
   delete neighbor_[1][1][1].pnb;
@@ -426,7 +429,7 @@ void Particles::ClearNeighbors() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::Integrate(int step)
-//  \brief updates all particle positions and velocities from t to t + dt.
+//! \brief updates all particle positions and velocities from t to t + dt.
 
 void Particles::Integrate(int stage) {
   Real t = 0, dt = 0;
@@ -455,8 +458,8 @@ void Particles::Integrate(int stage) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::LinkNeighbors(MeshBlockTree &tree,
-//          int64_t nrbx1, int64_t nrbx2, int64_t nrbx3, int root_level)
-//  \brief fetches neighbor information for later communication.
+//!         int64_t nrbx1, int64_t nrbx2, int64_t nrbx3, int root_level)
+//! \brief fetches neighbor information for later communication.
 
 void Particles::LinkNeighbors(MeshBlockTree &tree,
     int64_t nrbx1, int64_t nrbx2, int64_t nrbx3, int root_level) {
@@ -532,7 +535,7 @@ void Particles::LinkNeighbors(MeshBlockTree &tree,
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::RemoveOneParticle(int k)
-//  \brief removes particle k in the block.
+//! \brief removes particle k in the block.
 
 void Particles::RemoveOneParticle(int k) {
   if (0 <= k && k < npar && --npar != k) {
@@ -550,7 +553,7 @@ void Particles::RemoveOneParticle(int k) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::SendParticleMesh()
-//  \brief send ParticleMesh meshaux near boundaries to neighbors.
+//! \brief send ParticleMesh meshaux near boundaries to neighbors.
 
 void Particles::SendParticleMesh() {
   if (ppm->nmeshaux > 0)
@@ -559,7 +562,7 @@ void Particles::SendParticleMesh() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::SendToNeighbors()
-//  \brief sends particles outside boundary to the buffers of neighboring meshblocks.
+//! \brief sends particles outside boundary to the buffers of neighboring meshblocks.
 
 void Particles::SendToNeighbors() {
   const int IS = pmy_block->is;
@@ -665,7 +668,7 @@ void Particles::SendToNeighbors() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::SetPositionIndices()
-//  \brief updates position indices of particles.
+//! \brief updates position indices of particles.
 
 void Particles::SetPositionIndices() {
   GetPositionIndices(npar, xp, yp, zp, xi1, xi2, xi3);
@@ -673,7 +676,7 @@ void Particles::SetPositionIndices() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::StartReceiving()
-//  \brief starts receiving ParticleMesh meshaux near boundary from neighbor processes.
+//! \brief starts receiving ParticleMesh meshaux near boundary from neighbor processes.
 
 void Particles::StartReceiving() {
   ppm->StartReceiving();
@@ -681,8 +684,8 @@ void Particles::StartReceiving() {
 
 //--------------------------------------------------------------------------------------
 //! \fn bool Particles::ReceiveFromNeighbors()
-//  \brief receives particles from neighboring meshblocks and returns a flag indicating
-//         if all receives are completed.
+//! \brief receives particles from neighboring meshblocks and returns a flag indicating
+//!        if all receives are completed.
 
 bool Particles::ReceiveFromNeighbors() {
   bool flag = true;
@@ -760,8 +763,8 @@ bool Particles::ReceiveFromNeighbors() {
 
 //--------------------------------------------------------------------------------------
 //! \fn bool Particles::ReceiveParticleMesh(int step)
-//  \brief receives ParticleMesh meshaux near boundaries from neighbors and returns a
-//         flag indicating if all receives are completed.
+//! \brief receives ParticleMesh meshaux near boundaries from neighbors and returns a
+//!        flag indicating if all receives are completed.
 
 bool Particles::ReceiveParticleMesh(int stage) {
   if (ppm->nmeshaux <= 0) return true;
@@ -794,7 +797,7 @@ bool Particles::ReceiveParticleMesh(int stage) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::ProcessNewParticles()
-//  \brief searches for and books new particles.
+//! \brief searches for and books new particles.
 
 void Particles::ProcessNewParticles(Mesh *pmesh) {
   // Count new particles.
@@ -822,7 +825,7 @@ void Particles::ProcessNewParticles(Mesh *pmesh) {
 
 //--------------------------------------------------------------------------------------
 //! \fn int Particles::CountNewParticles()
-//  \brief counts new particles in the block.
+//! \brief counts new particles in the block.
 
 int Particles::CountNewParticles() const {
   int n = 0;
@@ -833,9 +836,10 @@ int Particles::CountNewParticles() const {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::ApplyBoundaryConditions(int k, Real &x1, Real &x2, Real &x3)
-//  \brief applies boundary conditions to particle k and returns its updated mesh
-//         coordinates (x1,x2,x3).
-// TODO(ccyang): implement nonperiodic boundary conditions.
+//! \brief applies boundary conditions to particle k and returns its updated mesh
+//!        coordinates (x1,x2,x3).
+//! \todo (ccyang):
+//! - implement nonperiodic boundary conditions.
 
 void Particles::ApplyBoundaryConditions(int k, Real &x1, Real &x2, Real &x3) {
   bool flag = false;
@@ -906,12 +910,13 @@ void Particles::ApplyBoundaryConditions(int k, Real &x1, Real &x2, Real &x3) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::EulerStep(Real t, Real dt, const AthenaArray<Real>& meshsrc)
-//  \brief evolves the particle positions and velocities by one Euler step.
+//! \brief evolves the particle positions and velocities by one Euler step.
 
 void Particles::EulerStep(Real t, Real dt, const AthenaArray<Real>& meshsrc) {
   // Update positions.
   for (int k = 0; k < npar; ++k) {
-    // TODO(ccyang): This is a temporary hack.
+    //! \todo (ccyang):
+    //! - This is a temporary hack.
     Real tmpx = xp(k), tmpy = yp(k), tmpz = zp(k);
     xp(k) = xp0(k) + dt * vpx(k);
     yp(k) = yp0(k) + dt * vpy(k);
@@ -928,13 +933,13 @@ void Particles::EulerStep(Real t, Real dt, const AthenaArray<Real>& meshsrc) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::GetPositionIndices(int npar,
-//                                         const AthenaArray<Real>& xp,
-//                                         const AthenaArray<Real>& yp,
-//                                         const AthenaArray<Real>& zp,
-//                                         AthenaArray<Real>& xi1,
-//                                         AthenaArray<Real>& xi2,
-//                                         AthenaArray<Real>& xi3)
-//  \brief finds the position indices of each particle with respect to the local grid.
+//!                                        const AthenaArray<Real>& xp,
+//!                                        const AthenaArray<Real>& yp,
+//!                                        const AthenaArray<Real>& zp,
+//!                                        AthenaArray<Real>& xi1,
+//!                                        AthenaArray<Real>& xi2,
+//!                                        AthenaArray<Real>& xi3)
+//! \brief finds the position indices of each particle with respect to the local grid.
 
 void Particles::GetPositionIndices(int npar,
                                    const AthenaArray<Real>& xp,
@@ -955,7 +960,7 @@ void Particles::GetPositionIndices(int npar,
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::SetNewParticleID(int id0)
-//  \brief searches for new particles and assigns ID, beginning at id + 1.
+//! \brief searches for new particles and assigns ID, beginning at id + 1.
 
 void Particles::SetNewParticleID(int id) {
   for (int i = 0; i < npar; ++i)
@@ -964,7 +969,7 @@ void Particles::SetNewParticleID(int id) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::SaveStatus()
-//  \brief saves the current positions and velocities for later use.
+//! \brief saves the current positions and velocities for later use.
 
 void Particles::SaveStatus() {
   for (int k = 0; k < npar; ++k) {
@@ -982,8 +987,8 @@ void Particles::SaveStatus() {
 
 //--------------------------------------------------------------------------------------
 //! \fn MeshBlock* Particles::FindTargetNeighbor(
-//          int ox1, int ox2, int ox3, int xi1, int xi2, int xi3)
-//  \brief finds the neighbor to send a particle to.
+//!         int ox1, int ox2, int ox3, int xi1, int xi2, int xi3)
+//! \brief finds the neighbor to send a particle to.
 
 struct Neighbor* Particles::FindTargetNeighbor(
     int ox1, int ox2, int ox3, int xi1, int xi2, int xi3) {
@@ -1011,7 +1016,7 @@ struct Neighbor* Particles::FindTargetNeighbor(
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::FlushReceiveBuffer(ParticleBuffer& recv)
-//  \brief adds particles from the receive buffer.
+//! \brief adds particles from the receive buffer.
 
 void Particles::FlushReceiveBuffer(ParticleBuffer& recv) {
   // Check the memory size.
@@ -1048,7 +1053,7 @@ void Particles::FlushReceiveBuffer(ParticleBuffer& recv) {
 
 //--------------------------------------------------------------------------------------
 //! \fn int Particles::AddIntProperty()
-//  \brief adds one integer property to the particles and returns the index.
+//! \brief adds one integer property to the particles and returns the index.
 
 int Particles::AddIntProperty() {
   return nint++;
@@ -1056,7 +1061,7 @@ int Particles::AddIntProperty() {
 
 //--------------------------------------------------------------------------------------
 //! \fn int Particles::AddRealProperty()
-//  \brief adds one real property to the particles and returns the index.
+//! \brief adds one real property to the particles and returns the index.
 
 int Particles::AddRealProperty() {
   return nreal++;
@@ -1064,7 +1069,7 @@ int Particles::AddRealProperty() {
 
 //--------------------------------------------------------------------------------------
 //! \fn int Particles::AddAuxProperty()
-//  \brief adds one auxiliary property to the particles and returns the index.
+//! \brief adds one auxiliary property to the particles and returns the index.
 
 int Particles::AddAuxProperty() {
   return naux++;
@@ -1072,7 +1077,7 @@ int Particles::AddAuxProperty() {
 
 //--------------------------------------------------------------------------------------
 //! \fn int Particles::AddWorkingArray()
-//  \brief adds one working array to the particles and returns the index.
+//! \brief adds one working array to the particles and returns the index.
 
 int Particles::AddWorkingArray() {
   return nwork++;
@@ -1080,7 +1085,7 @@ int Particles::AddWorkingArray() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::AssignShorthands()
-//  \brief assigns shorthands by shallow copying slices of the data.
+//! \brief assigns shorthands by shallow copying slices of the data.
 
 void Particles::AssignShorthands() {
   pid.InitWithShallowSlice(intprop, 2, ipid, 1);
@@ -1106,7 +1111,7 @@ void Particles::AssignShorthands() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void Particles::UpdateCapacity(int new_nparmax)
-//  \brief changes the capacity of particle arrays while preserving existing data.
+//! \brief changes the capacity of particle arrays while preserving existing data.
 
 void Particles::UpdateCapacity(int new_nparmax) {
   // Increase size of property arrays
@@ -1122,7 +1127,7 @@ void Particles::UpdateCapacity(int new_nparmax) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Real Particles::NewBlockTimeStep();
-//  \brief returns the time step required by particles in the block.
+//! \brief returns the time step required by particles in the block.
 
 Real Particles::NewBlockTimeStep() {
   Coordinates *pc = pmy_block->pcoord;
@@ -1146,7 +1151,7 @@ Real Particles::NewBlockTimeStep() {
 
 //--------------------------------------------------------------------------------------
 //! \fn std::size_t Particles::GetSizeInBytes()
-//  \brief returns the data size in bytes in the meshblock.
+//! \brief returns the data size in bytes in the meshblock.
 
 std::size_t Particles::GetSizeInBytes() {
   std::size_t size = sizeof(npar);
@@ -1156,7 +1161,7 @@ std::size_t Particles::GetSizeInBytes() {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::UnpackParticlesForRestart()
-//  \brief reads the particle data from the restart file.
+//! \brief reads the particle data from the restart file.
 
 void Particles::UnpackParticlesForRestart(char *mbdata, std::size_t &os) {
   // Read number of particles.
@@ -1184,7 +1189,7 @@ void Particles::UnpackParticlesForRestart(char *mbdata, std::size_t &os) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::PackParticlesForRestart()
-//  \brief pack the particle data for restart dump.
+//! \brief pack the particle data for restart dump.
 
 void Particles::PackParticlesForRestart(char *&pdata) {
   // Write number of particles.
@@ -1209,7 +1214,7 @@ void Particles::PackParticlesForRestart(char *&pdata) {
 
 //--------------------------------------------------------------------------------------
 //! \fn Particles::FormattedTableOutput()
-//  \brief outputs the particle data in tabulated format.
+//! \brief outputs the particle data in tabulated format.
 
 void Particles::FormattedTableOutput(Mesh *pm, OutputParameters op) {
   std::stringstream fname, msg;
@@ -1253,7 +1258,7 @@ void Particles::FormattedTableOutput(Mesh *pm, OutputParameters op) {
 
 //--------------------------------------------------------------------------------------
 //! \fn int CheckSide(int xi, nx, int xi1, int xi2)
-//  \brief returns -1 if xi < xi1, +1 if xi > xi2, or 0 otherwise.
+//! \brief returns -1 if xi < xi1, +1 if xi > xi2, or 0 otherwise.
 
 inline int CheckSide(int xi, int xi1, int xi2) {
   if (xi < xi1) return -1;

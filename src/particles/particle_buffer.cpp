@@ -3,7 +3,7 @@
 // Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code contributors
 //======================================================================================
 //! \file particle_buffer.cpp
-//  \brief implements ParticleBuffer class for communication of particles.
+//! \brief implements ParticleBuffer class for communication of particles.
 //======================================================================================
 
 // C++ standard libraries
@@ -20,7 +20,7 @@ int ParticleBuffer::nint = 0, ParticleBuffer::nreal = 0;
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleBuffer::SetNumberOfProperties(int nint0, int nreal0)
-//  \brief sets the number of integer and real propertes.
+//! \brief sets the number of integer and real propertes.
 
 void ParticleBuffer::SetNumberOfProperties(int nint0, int nreal0) {
   // Sanity check
@@ -40,7 +40,7 @@ void ParticleBuffer::SetNumberOfProperties(int nint0, int nreal0) {
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleBuffer::ParticleBuffer()
-//  \brief initiates a default instance of ParticleBuffer.
+//! \brief initiates a default instance of ParticleBuffer.
 
 ParticleBuffer::ParticleBuffer() {
   ibuf = NULL;
@@ -55,7 +55,7 @@ ParticleBuffer::ParticleBuffer() {
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleBuffer::ParticleBuffer(int nparmax0)
-//  \brief initiates a new instance of ParticleBuffer with nparmax = nparmax0.
+//! \brief initiates a new instance of ParticleBuffer with nparmax = nparmax0.
 
 ParticleBuffer::ParticleBuffer(int nparmax0) {
   // Sanity check
@@ -85,7 +85,7 @@ ParticleBuffer::ParticleBuffer(int nparmax0) {
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleBuffer::ParticleBuffer(int nparmax0)
-//  \brief destroys an instance of ParticleBuffer.
+//! \brief destroys an instance of ParticleBuffer.
 
 ParticleBuffer::~ParticleBuffer() {
   if (ibuf != NULL) delete [] ibuf;
@@ -98,7 +98,7 @@ ParticleBuffer::~ParticleBuffer() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleBuffer::Reallocate(int new_nparmax)
-//  \brief reallocates the buffers; the old content is preserved.
+//! \brief reallocates the buffers; the old content is preserved.
 
 void ParticleBuffer::Reallocate(int new_nparmax) {
   // Sanity check
