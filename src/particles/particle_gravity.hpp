@@ -6,7 +6,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file particle_gravity.hpp
-//  \brief provides the header for the ParticleGravity class.
+//! \brief provides the header for the ParticleGravity class.
 
 // Forward definition
 class ParticleMesh;
@@ -14,7 +14,7 @@ class Particles;
 
 //--------------------------------------------------------------------------------------
 //! \class ParticleGravity
-//  \brief defines the class for managing the gravity on particles.
+//! \brief defines the class for managing the gravity on particles.
 
 class ParticleGravity {
  public:
@@ -36,10 +36,10 @@ class ParticleGravity {
   static int iwx, iwy, iwz;  // indices to working arrays
 
   // Attributes
-  AthenaArray<Real> gforce;        // gravitational force
-  Coordinates *pcoord;             // pointer to the coordinates
-  Particles *pmy_par;              // pointer to parent Particles instance
-  ParticleMesh *pmy_pm;            // pointer to my ParticleMesh instance
+  AthenaArray<Real> gforce;        //!> gravitational force
+  Coordinates *pcoord;             //!> pointer to the coordinates
+  Particles *pmy_par;              //!> pointer to parent Particles instance
+  ParticleMesh *pmy_pm;            //!> pointer to my ParticleMesh instance
   bool active1, active2, active3;  // whether or not a direction is active
   int ncells1, ncells2, ncells3;   // block dimensions
 };

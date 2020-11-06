@@ -6,8 +6,8 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file particle-mesh.hpp
-//  \brief defines ParticleMesh class used for communication between meshblocks needed
-//         by particle-mesh methods.
+//! \brief defines ParticleMesh class used for communication between meshblocks needed
+//!        by particle-mesh methods.
 
 // C++ standard library
 #include <cmath>
@@ -23,9 +23,9 @@
 #endif
 
 // Particle-mesh constants.
-const Real RINF = 1;  // radius of influence
+const Real RINF = 1;  //!> radius of influence
 
-// Define the size of a particle cloud = 2 * RINF + 1
+//! Define the size of a particle cloud = 2 * RINF + 1
 #define NPC 3
 
 // Forward declaration
@@ -34,7 +34,7 @@ class ParameterInput;
 
 //--------------------------------------------------------------------------------------
 //! \class ParticleMesh
-//  \brief defines the class for particle-mesh methods
+//! \brief defines the class for particle-mesh methods
 
 class ParticleMesh {
 friend class Particles;
@@ -56,13 +56,13 @@ friend class OutputType;
 
  protected:
   // Class variables
-  static int nmeshaux;  // number of auxiliaries to the meshblock
-  static int iweight;   // index to weight in meshaux
+  static int nmeshaux;  //!> number of auxiliaries to the meshblock
+  static int iweight;   //!> index to weight in meshaux
 
   // Instance variables
-  AthenaArray<Real> meshaux;   // auxiliaries to the meshblock
+  AthenaArray<Real> meshaux;   //!> auxiliaries to the meshblock
   int is, ie, js, je, ks, ke;  // beginning and ending indices
-  AthenaArray<Real> weight;    // shorthand to weight in meshaux
+  AthenaArray<Real> weight;    //!> shorthand to weight in meshaux
 
   // Instance methods
   void InterpolateMeshToParticles(
@@ -87,7 +87,7 @@ friend class OutputType;
                                // domain that influences the ghost block
     Real xi1_0, xi2_0, xi3_0;  // origin of the ghost block wrt to the local meshblock
     int ngx1, ngx2, ngx3;      // dimensions of the ghost block
-    int ngtot;                 // total number of cells in the ghost block
+    int ngtot;                 //!> total number of cells in the ghost block
     int irs, ire, jrs, jre, krs, kre;  // beginning/ending indices in meshaux to receive
     int iss, ise, jss, jse, kss, kse;  // beginning/ending indices in meshaux to send
   };
@@ -102,12 +102,12 @@ friend class OutputType;
   int ncells_;                        // total number of cells in meshaux
   int npc1_, npc2_, npc3_;            // size of a particle cloud
 
-  Particles *ppar_;            // ptr to my Particles instance
-  MeshBlock *pmb_;             // ptr to my MeshBlock
-  Mesh *pmesh_;                // ptr to my Mesh
-  BoundaryValues *pbval_;      // ptr to my BoundaryValues
-  BoundaryData<> bd_;            // boundary data
-  BoundaryAttributes ba_[56];  // ghost block attributes
+  Particles *ppar_;            //!> ptr to my Particles instance
+  MeshBlock *pmb_;             //!> ptr to my MeshBlock
+  Mesh *pmesh_;                //!> ptr to my Mesh
+  BoundaryValues *pbval_;      //!> ptr to my BoundaryValues
+  BoundaryData<> bd_;          //!> boundary data
+  BoundaryAttributes ba_[56];  //!> ghost block attributes
 
   // Instance methods
   void InitiateBoundaryData();
@@ -119,7 +119,7 @@ friend class OutputType;
 
 #ifdef MPI_PARALLEL
   // Variables for MPI
-  static MPI_Comm my_comm;  // my MPI communicator
+  static MPI_Comm my_comm;  //!> my MPI communicator
 #endif
 };
 #endif  // PARTICLES_PARTICLE_MESH_HPP_

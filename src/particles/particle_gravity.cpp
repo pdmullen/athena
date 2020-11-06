@@ -4,7 +4,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file particle_gravity.cpp
-//  \brief implements the members of the ParticleGravity class.
+//! \brief implements the members of the ParticleGravity class.
 
 // C++ standard libraries
 #include <cstring>  // strcmp()
@@ -24,7 +24,7 @@ int ParticleGravity::iwx(-1), ParticleGravity::iwy(-1), ParticleGravity::iwz(-1)
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleGravity::ParticleGravity(Particles *ppar)
-//  \brief constructs a new ParticleGravity instance.
+//! \brief constructs a new ParticleGravity instance.
 
 ParticleGravity::ParticleGravity(Particles *ppar) {
   // Remember my parent Particles instance.
@@ -49,7 +49,7 @@ ParticleGravity::ParticleGravity(Particles *ppar) {
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleGravity::~ParticleGravity(Particles *ppar)
-//  \brief constructs a new ParticleGravity instance.
+//! \brief constructs a new ParticleGravity instance.
 
 ParticleGravity::~ParticleGravity() {
   // Deallocate space for gravitational force.
@@ -58,7 +58,7 @@ ParticleGravity::~ParticleGravity() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleGravity::ExertGravitationalForce(Real dt)
-//  \brief exerts the gravitational force on each particle.
+//! \brief exerts the gravitational force on each particle.
 
 void ParticleGravity::ExertGravitationalForce(Real dt) {
   // Interpolate the gravitational force onto each particle.
@@ -74,8 +74,10 @@ void ParticleGravity::ExertGravitationalForce(Real dt) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleGravity::FindGravitationalForce(const AthenaArray<Real>& phi)
-//  \brief computes the gravitational force from the potential phi.
-// TODO(ccyang): currently only works with uniform cartesian.
+//! \brief computes the gravitational force from the potential phi.
+//!
+//! \todo (ccyang)
+//! - currently only works with uniform cartesian.
 
 void ParticleGravity::FindGravitationalForce(const AthenaArray<Real>& phi) {
   // Sanity check.
@@ -121,7 +123,7 @@ void ParticleGravity::FindGravitationalForce(const AthenaArray<Real>& phi) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleGravity::Initialize()
-//  \brief initializes the class.
+//! \brief initializes the class.
 
 void ParticleGravity::Initialize() {
   // Get the indices to working arrays for particles.

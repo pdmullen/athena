@@ -4,7 +4,7 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file one_particle.cpp
-//  \brief tests one particle.
+//! \brief tests one particle.
 
 // C++ standard libraries
 #include <cmath>    // round()
@@ -21,7 +21,7 @@
 
 //======================================================================================
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
-//  \brief Sets the initial conditions.
+//! \brief Sets the initial conditions.
 //======================================================================================
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {

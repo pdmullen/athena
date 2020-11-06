@@ -4,8 +4,8 @@
 // Licensed under the 3-clause BSD License, see LICENSE file for details
 //======================================================================================
 //! \file particle-mesh.cpp
-//  \brief implements ParticleMesh class used for operations involved in particle-mesh
-//         methods.
+//! \brief implements ParticleMesh class used for operations involved in particle-mesh
+//!        methods.
 
 // Standard library
 #include <algorithm>
@@ -33,7 +33,7 @@ static Real _WeightFunction(Real dxi);
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::Initialize(ParameterInput *pin)
-//  \brief initiates the ParticleMesh class.
+//! \brief initiates the ParticleMesh class.
 
 void ParticleMesh::Initialize(ParameterInput *pin) {
   if (initialized_) return;
@@ -51,7 +51,7 @@ void ParticleMesh::Initialize(ParameterInput *pin) {
 
 //--------------------------------------------------------------------------------------
 //! \fn int ParticleMesh::AddMeshAux()
-//  \brief adds one auxiliary to the mesh and returns the index.
+//! \brief adds one auxiliary to the mesh and returns the index.
 
 int ParticleMesh::AddMeshAux() {
   return nmeshaux++;
@@ -59,7 +59,7 @@ int ParticleMesh::AddMeshAux() {
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleMesh::ParticleMesh(Particles *ppar, int nmeshaux)
-//  \brief constructs a new ParticleMesh instance.
+//! \brief constructs a new ParticleMesh instance.
 
 ParticleMesh::ParticleMesh(Particles *ppar) {
   // Save some inputs.
@@ -116,7 +116,7 @@ ParticleMesh::ParticleMesh(Particles *ppar) {
 
 //--------------------------------------------------------------------------------------
 //! \fn ParticleMesh::~ParticleMesh()
-//  \brief destructs a ParticleMesh instance.
+//! \brief destructs a ParticleMesh instance.
 
 ParticleMesh::~ParticleMesh() {
   // Destroy the particle meshblock.
@@ -136,7 +136,7 @@ ParticleMesh::~ParticleMesh() {
 
 //--------------------------------------------------------------------------------------
 //! \fn Real ParticleMesh::FindMaximumWeight()
-//  \brief returns the maximum weight in the meshblock.
+//! \brief returns the maximum weight in the meshblock.
 
 Real ParticleMesh::FindMaximumWeight() const {
   Real wmax = 0.0;
@@ -149,11 +149,11 @@ Real ParticleMesh::FindMaximumWeight() const {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::InterpolateMeshToParticles(
-//               const AthenaArray<Real>& meshsrc, int ms1,
-//               AthenaArray<Real>& par, int p1, int nprop)
-//  \brief interpolates meshsrc from property index ms1 to ms1+nprop-1 onto particle
-//      array par (realprop, auxprop, or work in Particles class) from property index p1
-//      to p1+nprop-1.
+//!              const AthenaArray<Real>& meshsrc, int ms1,
+//!              AthenaArray<Real>& par, int p1, int nprop)
+//! \brief interpolates meshsrc from property index ms1 to ms1+nprop-1 onto particle
+//!     array par (realprop, auxprop, or work in Particles class) from property index p1
+//!     to p1+nprop-1.
 
 void ParticleMesh::InterpolateMeshToParticles(
          const AthenaArray<Real>& meshsrc, int ms1,
@@ -196,9 +196,9 @@ void ParticleMesh::InterpolateMeshToParticles(
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::AssignParticlesToMeshAux(
-//               const AthenaArray<Real>& par, int p1, int p2, int ma1)
-//  \brief assigns par (realprop, auxprop, or work in Particles class) from property
-//         index p1 to p2 onto meshaux from property index ma1 and up.
+//!              const AthenaArray<Real>& par, int p1, int p2, int ma1)
+//! \brief assigns par (realprop, auxprop, or work in Particles class) from property
+//!        index p1 to p2 onto meshaux from property index ma1 and up.
 
 void ParticleMesh::AssignParticlesToMeshAux(
          const AthenaArray<Real>& par, int p1, int ma1, int nprop) {
@@ -253,13 +253,13 @@ void ParticleMesh::AssignParticlesToMeshAux(
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::InterpolateMeshAndAssignParticles(
-//               const AthenaArray<Real>& meshsrc, int ms1,
-//               AthenaArray<Real>& pardst, int pd1, int ni,
-//               const AthenaArray<Real>& parsrc, int ps1, int ma1, int na)
-//  \brief interpolates meshsrc from property index ms1 to ms1 + ni - 1 onto particle
-//      array pardst from index pd1 to pd1 + ni - 1, and assigns parsrc from property
-//      index ps1 to ps1 + na - 1 onto meshaux from ma1 to ma1 + na - 1.  The arrays
-//      parsrc and pardst can be realprop, auxprop, or work in Particles class.
+//!              const AthenaArray<Real>& meshsrc, int ms1,
+//!              AthenaArray<Real>& pardst, int pd1, int ni,
+//!              const AthenaArray<Real>& parsrc, int ps1, int ma1, int na)
+//! \brief interpolates meshsrc from property index ms1 to ms1 + ni - 1 onto particle
+//!     array pardst from index pd1 to pd1 + ni - 1, and assigns parsrc from property
+//!     index ps1 to ps1 + na - 1 onto meshaux from ma1 to ma1 + na - 1.  The arrays
+//!     parsrc and pardst can be realprop, auxprop, or work in Particles class.
 
 void ParticleMesh::InterpolateMeshAndAssignParticles(
          const AthenaArray<Real>& meshsrc, int ms1,
@@ -391,9 +391,9 @@ void ParticleMesh::InterpolateMeshAndAssignParticles(
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::DepositMeshAux(AthenaArray<Real>& u,
-//                                        int ma1, int mb1, int nprop)
-//  \brief deposits data in meshaux from property index ma1 to ma1+nprop-1 to meshblock
-//         data u from property index mb1 and mb1+nprop-1, divided by cell volume.
+//!                                       int ma1, int mb1, int nprop)
+//! \brief deposits data in meshaux from property index ma1 to ma1+nprop-1 to meshblock
+//!        data u from property index mb1 and mb1+nprop-1, divided by cell volume.
 
 void ParticleMesh::DepositMeshAux(AthenaArray<Real>& u, int ma1, int mb1, int nprop) {
   Coordinates *pc = pmb_->pcoord;
@@ -408,7 +408,7 @@ void ParticleMesh::DepositMeshAux(AthenaArray<Real>& u, int ma1, int mb1, int np
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::InitiateBoundaryData()
-//  \brief allocates space for boundary data.
+//! \brief allocates space for boundary data.
 
 void ParticleMesh::InitiateBoundaryData() {
   for (int n = 0; n < pbval_->nneighbor; n++) {
@@ -437,7 +437,7 @@ void ParticleMesh::InitiateBoundaryData() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::SetBoundaryAttributes()
-//  \brief initializes or reinitializes attributes for each boundary.
+//! \brief initializes or reinitializes attributes for each boundary.
 
 void ParticleMesh::SetBoundaryAttributes() {
   const RegionSize& block_size = pmb_->block_size;
@@ -692,9 +692,9 @@ void ParticleMesh::SetBoundaryAttributes() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::AssignParticlesToDifferentLevels(
-//         const AthenaArray<Real>& par, int p1, int ma1, int nprop)
-//  \brief assigns particle array par from property index p1 to p1+nprop-1 to meshaux
-//         from property index ma1 to ma1+nprop-1 in neighbors of different levels.
+//!        const AthenaArray<Real>& par, int p1, int ma1, int nprop)
+//! \brief assigns particle array par from property index p1 to p1+nprop-1 to meshaux
+//!        from property index ma1 to ma1+nprop-1 in neighbors of different levels.
 
 void ParticleMesh::AssignParticlesToDifferentLevels(
          const AthenaArray<Real>& par, int p1, int ma1, int nprop) {
@@ -808,8 +808,8 @@ void ParticleMesh::AssignParticlesToDifferentLevels(
 
 //--------------------------------------------------------------------------------------
 //! \fn int ParticleMesh::LoadBoundaryBufferSameLevel(
-//                            Real *buf, const BoundaryAttributes& ba)
-//  \brief Fill boundary buffers for sending to a block on the same level
+//!                           Real *buf, const BoundaryAttributes& ba)
+//! \brief Fill boundary buffers for sending to a block on the same level
 
 int ParticleMesh::LoadBoundaryBufferSameLevel(Real *buf, const BoundaryAttributes& ba) {
   int p = 0;
@@ -820,7 +820,7 @@ int ParticleMesh::LoadBoundaryBufferSameLevel(Real *buf, const BoundaryAttribute
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::AddBoundaryBuffer(Real *buf, const BoundaryAttributes& ba)
-//  \brief Add boundary buffer from a neighbor block to meshaux.
+//! \brief Add boundary buffer from a neighbor block to meshaux.
 
 void ParticleMesh::AddBoundaryBuffer(Real *buf, const BoundaryAttributes& ba) {
   // Add the data to the meshaux.
@@ -833,7 +833,7 @@ void ParticleMesh::AddBoundaryBuffer(Real *buf, const BoundaryAttributes& ba) {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::ClearBoundary()
-//  \brief clears boundary data to neighboring blocks.
+//! \brief clears boundary data to neighboring blocks.
 
 void ParticleMesh::ClearBoundary() {
   for (int n = 0; n < pbval_->nneighbor; n++) {
@@ -848,7 +848,7 @@ void ParticleMesh::ClearBoundary() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::SendBoundary()
-//  \brief Send boundary values to neighboring blocks.
+//! \brief Send boundary values to neighboring blocks.
 
 void ParticleMesh::SendBoundary() {
   const int mylevel = pmb_->loc.level;
@@ -875,7 +875,7 @@ void ParticleMesh::SendBoundary() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::StartReceiving()
-//  \brief starts receiving meshaux near boundary from neighbor processes.
+//! \brief starts receiving meshaux near boundary from neighbor processes.
 
 void ParticleMesh::StartReceiving() {
 #ifdef MPI_PARALLEL
@@ -889,8 +889,8 @@ void ParticleMesh::StartReceiving() {
 
 //--------------------------------------------------------------------------------------
 //! \fn void ParticleMesh::ReceiveBoundary()
-//  \brief receives boundary values from neighboring blocks and add to my block and
-//         returns a flag indicating if all receives are completed.
+//! \brief receives boundary values from neighboring blocks and add to my block and
+//!        returns a flag indicating if all receives are completed.
 
 #include <iomanip>
 
@@ -929,7 +929,7 @@ bool ParticleMesh::ReceiveBoundary() {
 
 //--------------------------------------------------------------------------------------
 //! \fn Real _WeightFunction(Real dxi)
-//  \brief evaluates the weight function given index distance.
+//! \brief evaluates the weight function given index distance.
 
 Real _WeightFunction(Real dxi) {
   dxi = std::min(std::abs(dxi), static_cast<Real>(1.5));
