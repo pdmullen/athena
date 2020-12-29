@@ -52,8 +52,11 @@ class HydroSourceTerms {
                               const AthenaArray<Real> &p, AthenaArray<Real> &c);
   Real UnstratifiedDisk(const Real x1, const Real x2, const Real x3);
 
-  void SelfGravity(const Real dt, const AthenaArray<Real> *flx,
-                   const AthenaArray<Real> &p, AthenaArray<Real> &c);
+  void SelfGravityMomentum(const Real dt, const AthenaArray<Real> *flx,
+                           const AthenaArray<Real> &p, AthenaArray<Real> &c);
+  void SelfGravityEnergy(const Real dt,Real stage,const Real wght[2],
+                         const AthenaArray<Real> *fl, const AthenaArray<Real> *fl0,
+                         const AthenaArray<Real> *fl1, AthenaArray<Real> &cons);
   void EnrollSrcTermFunction(SrcTermFunc my_func);
   SrcTermFunc UserSourceTerm;
 

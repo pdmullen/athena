@@ -372,7 +372,7 @@ void Hydro::CalculateFluxes(AthenaArray<Real> &w, FaceField &b,
     } // end if (order == 4)
   }
 
-  if (SELF_GRAVITY_ENABLED) AddGravityFlux(); // add gravity flux directly
+  if (SELF_GRAVITY_ENABLED && GRAVITY_FLUX_ENABLED) AddGravityFlux();  // add gravity flux
 
   if (!STS_ENABLED) { // add diffusion fluxes
     AddDiffusionFluxes();
@@ -403,5 +403,43 @@ void Hydro::AddDiffusionFluxes() {
     if (pf->fdif.field_diffusion_defined)
       pf->fdif.AddPoyntingFlux(pf->fdif.pflux);
   }
+  return;
+}
+
+//----------------------------------------------------------------------------------------
+//! \fn void Hydro::SetFluxes
+//  \brief Copies mass fluxes to storage registers
+
+void Hydro::SetFluxes(AthenaArray<Real> *flux_src,
+                      AthenaArray<Real> *flux_des) {
+  MeshBlock *pmb = pmy_block;
+  int is = pmb->is; int js = pmb->js; int ks = pmb->ks;
+  int ie = pmb->ie; int je = pmb->je; int ke = pmb->ke;
+
+  AthenaArray<Real> &x1flux_des = flux_des[X1DIR];
+  AthenaArray<Real> &x2flux_des = flux_des[X2DIR];
+  AthenaArray<Real> &x3flux_des = flux_des[X3DIR];
+  AthenaArray<Real> &x1flux_src = flux_src[X1DIR];
+  AthenaArray<Real> &x2flux_src = flux_src[X2DIR];
+  AthenaArray<Real> &x3flux_src = flux_src[X3DIR];
+
+  for (int k=ks; k<=ke; ++k) {
+    for (int j=js; j<=je; ++j) {
+#pragma omp simd
+      for (int i=is; i<=ie; ++i) {
+        x1flux_des(k,j,i) = x1flux_src(IDN,k,j,i);
+        if (i == ie) x1flux_des(k,j,i+1) = x1flux_src(IDN,k,j,i+1);
+        if (pmb->block_size.nx2 > 1) {
+          x2flux_des(k,j,i) = x2flux_src(IDN,k,j,i);
+          if (j == je) x2flux_des(k,j+1,i) = x2flux_src(IDN,k,j+1,i);
+        }
+        if (pmb->block_size.nx3 > 1) {
+          x3flux_des(k,j,i) = x3flux_src(k,j,i);
+          if (k == ke) x3flux_des(k+1,j,i) = x3flux_src(IDN,k+1,j,i);
+        }
+      }
+    }
+  }
+
   return;
 }

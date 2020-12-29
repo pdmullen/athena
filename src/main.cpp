@@ -359,6 +359,25 @@ int main(int argc, char *argv[]) {
 #endif // ENABLE_EXCEPTIONS
   }
 
+  GravitySourceTaskList *pgsrctlist = nullptr;
+  if (SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS) {
+#ifdef ENABLE_EXCEPTIONS
+    try {
+#endif
+      pgsrctlist = new GravitySourceTaskList(pinput, pmesh, ptlist);
+#ifdef ENABLE_EXCEPTIONS
+    }
+    catch(std::bad_alloc& ba) {
+      std::cout << "### FATAL ERROR in main" << std::endl << "memory allocation failed "
+                << "in creating task list " << ba.what() << std::endl;
+#ifdef MPI_PARALLEL
+      MPI_Finalize();
+#endif
+      return(0);
+    }
+#endif // ENABLE_EXCEPTIONS
+  }
+
   //--- Step 6. --------------------------------------------------------------------------
   // Set initial conditions by calling problem generator, or reading restart file
 
@@ -462,6 +481,8 @@ int main(int argc, char *argv[]) {
         pmesh->pfgrd->Solve(stage, 0);
       else if (SELF_GRAVITY_ENABLED == 2) // multigrid
         pmesh->pmgrd->Solve(stage);
+      if (SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)
+        pgsrctlist->DoTaskListOneStage(pmesh, stage);
     }
 
     if (STS_ENABLED && pmesh->sts_integrator == "rkl2") {

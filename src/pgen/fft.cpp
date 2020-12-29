@@ -95,7 +95,7 @@ void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
         }
       }
     }
-    pfft->LoadSource(src_, 0, NGHOST, loc, block_size);
+    pfft->LoadSource(src_, 0, NGHOST, loc, block_size, pmb->peos->GetDensityFloor());
   }
 
   if (Globals::my_rank == 0) {
@@ -150,7 +150,7 @@ void Mesh::UserWorkAfterLoop(ParameterInput *pin) {
 
     AthenaArray<Real> src_;
     src_.InitWithShallowSlice(src, 4, b, 1);
-    pfft->LoadSource(src_, 0, NGHOST, loc, block_size);
+    pfft->LoadSource(src_, 0, NGHOST, loc, block_size, pmb->peos->GetDensityFloor());
   }
 
   // Do FFT once for error estimation

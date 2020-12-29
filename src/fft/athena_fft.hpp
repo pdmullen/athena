@@ -103,7 +103,7 @@ class FFTBlock {
   virtual ~FFTBlock();
 
   void LoadSource(const AthenaArray<Real> &src, bool nu, int ngh,
-                  LogicalLocation loc, RegionSize bsize);
+                  LogicalLocation loc, RegionSize bsize, Real floor);
   void RetrieveResult(AthenaArray<Real> &dst, bool nu, int ngh,
                       LogicalLocation loc, RegionSize bsize);
   virtual void ApplyKernel(int mode);

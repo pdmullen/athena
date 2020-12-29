@@ -126,11 +126,11 @@ class TimeIntegratorTaskList : public TaskList {
     Real gamma_1, gamma_2, gamma_3; // low-storage coeff for weighted ave of registers
     Real beta; // coeff. from bidiagonal Shu-Osher form Beta matrix, -1 diagonal terms
   };
+  IntegratorWeight stage_wghts[MAX_NSTAGE];
 
   // data
   std::string integrator;
   Real cfl_limit; // dt stability limit for the particular time integrator + spatial order
-
   // functions
   TaskStatus ClearAllBoundary(MeshBlock *pmb, int stage);
 
@@ -185,8 +185,6 @@ class TimeIntegratorTaskList : public TaskList {
   TaskStatus SetBoundariesScalars(MeshBlock *pmb, int stage);
 
  private:
-  IntegratorWeight stage_wghts[MAX_NSTAGE];
-
   void AddTask(const TaskID& id, const TaskID& dep) override;
   void StartupTaskList(MeshBlock *pmb, int stage) override;
 };
@@ -224,6 +222,24 @@ class SuperTimeStepTaskList : public TaskList {
   TaskStatus NewBlockTimeStep_STS(MeshBlock *pmb, int stage);
   TaskStatus CheckRefinement_STS(MeshBlock *pmb, int stage);
 
+
+ private:
+  // currently intiialized but unused. May use it for direct calls to TimeIntegrator fns:
+  TimeIntegratorTaskList *ptlist_;
+  void AddTask(const TaskID&, const TaskID& dep) override;
+  void StartupTaskList(MeshBlock *pmb, int stage) override;
+};
+
+//----------------------------------------------------------------------------------------
+//! \class GravitySourceTaskList
+//  \brief data and function definitions for GravitySourceTaskList derived class
+
+class GravitySourceTaskList : public TaskList {
+ public:
+  GravitySourceTaskList(ParameterInput *pin, Mesh *pm, TimeIntegratorTaskList *ptlist);
+
+  TaskStatus ClearAllBoundary_GSRC(MeshBlock *pmb, int stage);
+  TaskStatus AddSourceTermsHydro_GSRC(MeshBlock *pmb, int stage);
 
  private:
   // currently intiialized but unused. May use it for direct calls to TimeIntegrator fns:

@@ -19,6 +19,7 @@
 #include "../athena.hpp"
 #include "../athena_arrays.hpp"
 #include "../coordinates/coordinates.hpp"
+#include "../eos/eos.hpp"
 #include "../fft/athena_fft.hpp"
 #include "../globals.hpp"
 #include "../hydro/hydro.hpp"
@@ -73,7 +74,8 @@ void FFTGravityDriver::Solve(int stage, int mode) {
     MeshBlock *pmb = pmy_mesh_->FindMeshBlock(igid);
     if (pmb != nullptr) {
       in.InitWithShallowSlice(pmb->phydro->u,4,IDN,1);
-      pfb->LoadSource(in, 0, NGHOST, pmb->loc, pmb->block_size);
+      pfb->LoadSource(in, 0, NGHOST, pmb->loc, pmb->block_size,
+                      pmb->peos->GetDensityFloor());
     }
     //    else { // on another process
     //    }

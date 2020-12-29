@@ -90,6 +90,7 @@ Mesh::Mesh(ParameterInput *pin, int mesh_test) :
     nlim(pin->GetOrAddInteger("time", "nlim", -1)), ncycle(),
     ncycle_out(pin->GetOrAddInteger("time", "ncycle_out", 1)),
     dt_diagnostics(pin->GetOrAddInteger("time", "dt_diagnostics", -1)),
+    integrator(pin->GetOrAddString("time", "integrator", "vl2")),
     sts_integrator(pin->GetOrAddString("time", "sts_integrator", "rkl1")),
     sts_max_dt_ratio(pin->GetOrAddReal("time", "sts_max_dt_ratio", -1.0)),
     sts_loc(TaskType::main_int),

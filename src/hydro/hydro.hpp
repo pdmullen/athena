@@ -47,6 +47,7 @@ class Hydro {
   // (no more than MAX_NREGISTER allowed)
 
   AthenaArray<Real> flux[3];  // face-averaged flux vector
+  AthenaArray<Real> fl0[3], fl1[3];  // mass flux memory registers
 
   // storage for SMR/AMR
   // TODO(KGF): remove trailing underscore or revert to private:
@@ -70,6 +71,7 @@ class Hydro {
   void CalculateFluxes(AthenaArray<Real> &w, FaceField &b,
                        AthenaArray<Real> &bcc, const int order);
   void CalculateFluxes_STS();
+  void SetFluxes(AthenaArray<Real> *flx_src, AthenaArray<Real> *flx_des);
 #if !MAGNETIC_FIELDS_ENABLED  // Hydro:
   void RiemannSolver(
       const int k, const int j, const int il, const int iu,

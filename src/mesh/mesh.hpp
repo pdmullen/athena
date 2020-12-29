@@ -224,6 +224,7 @@ class Mesh {
   const FluidFormulation fluid_setup;
   Real start_time, time, tlim, dt, dt_hyperbolic, dt_parabolic, dt_user, cfl_number;
   int nlim, ncycle, ncycle_out, dt_diagnostics;
+  std::string integrator;
   std::string sts_integrator;
   Real sts_max_dt_ratio;
   TaskType sts_loc;

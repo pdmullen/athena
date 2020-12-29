@@ -19,6 +19,7 @@
 #include "../athena.hpp"
 #include "../athena_arrays.hpp"
 #include "../coordinates/coordinates.hpp"
+#include "../eos/eos.hpp"
 #include "../globals.hpp"
 #include "../hydro/hydro.hpp"
 #include "../mesh/mesh.hpp"
@@ -108,7 +109,8 @@ void MGGravityDriver::Solve(int stage) {
   // load the source
   for (Multigrid* pmg : vmg_) {
     // assume all the data are located on the same node
-    pmg->LoadSource(pmg->pmy_block_->phydro->u, IDN, NGHOST, four_pi_G_);
+    pmg->LoadSource(pmg->pmy_block_->phydro->u, IDN, NGHOST, four_pi_G_,
+                    pmg->pmy_block_->peos->GetDensityFloor());
     if (mode_ >= 2) // iterative mode - load initial guess
       pmg->LoadFinestData(pmg->pmy_block_->pgrav->phi, 0, NGHOST);
   }

@@ -75,7 +75,7 @@ class Multigrid {
   BoundaryQuantity btype, btypef;
 
   void LoadFinestData(const AthenaArray<Real> &src, int ns, int ngh);
-  void LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real fac);
+  void LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real fac, Real dfloor);
   void RestrictFMGSource();
   void RetrieveResult(AthenaArray<Real> &dst, int ns, int ngh);
   void RetrieveDefect(AthenaArray<Real> &dst, int ns, int ngh);

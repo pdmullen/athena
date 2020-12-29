@@ -106,6 +106,8 @@ class BoundaryValues : public BoundaryBase, //public BoundaryPhysics,
   std::vector<BoundaryVariable *> bvars_main_int;
   // subset of bvars that are exchanged in the SuperTimeStepTaskList
   std::vector<BoundaryVariable *> bvars_sts;
+  // subset of bvars that are exchanged in the GravitySourceTaskList
+  std::vector<BoundaryVariable *> bvars_gsrc;
 
   // inherited functions (interface shared with BoundaryVariable objects):
   // ------

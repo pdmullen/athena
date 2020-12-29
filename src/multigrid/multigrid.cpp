@@ -169,7 +169,8 @@ void Multigrid::LoadFinestData(const AthenaArray<Real> &src, int ns, int ngh) {
 //                                 Real fac)
 //  \brief Fill the source in the active zone of the finest level
 
-void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real fac) {
+void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh,
+                           Real fac, Real dfloor) {
   AthenaArray<Real> &dst=src_[nlevel_-1];
   int is, ie, js, je, ks, ke;
   is=js=ks=ngh_;
@@ -180,7 +181,7 @@ void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real f
       for (int k=ngh, mk=ks; mk<=ke; ++k, ++mk) {
         for (int j=ngh, mj=js; mj<=je; ++j, ++mj) {
           for (int i=ngh, mi=is; mi<=ie; ++i, ++mi)
-            dst(v,mk,mj,mi)=src(nsrc,k,j,i);
+            dst(v,mk,mj,mi)=(src(nsrc,k,j,i) > dfloor) ?  src(nsrc,k,j,i) : dfloor;
         }
       }
     }
@@ -189,8 +190,10 @@ void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real f
       int nsrc=ns+v;
       for (int k=ngh, mk=ks; mk<=ke; ++k, ++mk) {
         for (int j=ngh, mj=js; mj<=je; ++j, ++mj) {
-          for (int i=ngh, mi=is; mi<=ie; ++i, ++mi)
-            dst(v,mk,mj,mi)=src(nsrc,k,j,i)*fac;
+          for (int i=ngh, mi=is; mi<=ie; ++i, ++mi) {
+            dst(v,mk,mj,mi)=(src(nsrc,k,j,i) > dfloor) ?  src(nsrc,k,j,i) : dfloor;
+            dst(v,mk,mj,mi)*=fac;
+          }
         }
       }
     }
@@ -198,7 +201,6 @@ void Multigrid::LoadSource(const AthenaArray<Real> &src, int ns, int ngh, Real f
   current_level_=nlevel_-1;
   return;
 }
-
 
 //----------------------------------------------------------------------------------------
 //! \fn void Multigrid::RestrictFMGSource()

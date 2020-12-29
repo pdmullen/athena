@@ -324,20 +324,41 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
         } else {
           AddTask(PROLONG,(SEND_HYD|SETB_HYD|SEND_FLD|SETB_FLD));
         }
-        AddTask(CONS2PRIM,PROLONG);
+        if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+          AddTask(CONS2PRIM,PROLONG);
+        } else {
+          AddTask(CLEAR_ALLBND,PROLONG);
+        }
       } else {
         if (SHEARING_BOX) {
           if (NSCALARS > 0) {
-            AddTask(CONS2PRIM,
-                    (SETB_HYD|SETB_FLD|SETB_SCLR|RECV_HYDSH|RECV_FLDSH|RMAP_EMFSH));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,
+                      (SETB_HYD|SETB_FLD|SETB_SCLR|RECV_HYDSH|RECV_FLDSH|RMAP_EMFSH));
+            } else {
+              AddTask(CLEAR_ALLBND,
+                      (SETB_HYD|SETB_FLD|SETB_SCLR|RECV_HYDSH|RECV_FLDSH|RMAP_EMFSH));
+            }
           } else {
-            AddTask(CONS2PRIM,(SETB_HYD|SETB_FLD|RECV_HYDSH|RECV_FLDSH|RMAP_EMFSH));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD|SETB_FLD|RECV_HYDSH|RECV_FLDSH|RMAP_EMFSH));
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD|SETB_FLD|RECV_HYDSH|RECV_FLDSH|RMAP_EMFSH));
+            }
           }
         } else {
           if (NSCALARS > 0) {
-            AddTask(CONS2PRIM,(SETB_HYD|SETB_FLD|SETB_SCLR));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD|SETB_FLD|SETB_SCLR));
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD|SETB_FLD|SETB_SCLR));
+            }
           } else {
-            AddTask(CONS2PRIM,(SETB_HYD|SETB_FLD));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD|SETB_FLD));
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD|SETB_FLD));
+            }
           }
         }
       }
@@ -349,37 +370,59 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
         } else {
           AddTask(PROLONG,(SEND_HYD|SETB_HYD));
         }
-        AddTask(CONS2PRIM,PROLONG);
+        if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+          AddTask(CONS2PRIM,PROLONG);
+        } else {
+          AddTask(CLEAR_ALLBND,PROLONG);
+        }
       } else {
         if (SHEARING_BOX) {
           if (NSCALARS > 0) {
-            AddTask(CONS2PRIM,(SETB_HYD|RECV_HYDSH|SETB_SCLR));  // RECV_SCLRSH
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD|RECV_HYDSH|SETB_SCLR));  // RECV_SCLRSH
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD|RECV_HYDSH|SETB_SCLR));  // RECV_SCLRSH
+            }
           } else {
-            AddTask(CONS2PRIM,(SETB_HYD|RECV_HYDSH));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD|RECV_HYDSH));
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD|RECV_HYDSH));
+            }
           }
         } else {
           if (NSCALARS > 0) {
-            AddTask(CONS2PRIM,(SETB_HYD|SETB_SCLR));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD|SETB_SCLR));
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD|SETB_SCLR));
+            }
           } else {
-            AddTask(CONS2PRIM,(SETB_HYD));
+            if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+              AddTask(CONS2PRIM,(SETB_HYD));
+            } else {
+              AddTask(CLEAR_ALLBND,(SETB_HYD));
+            }
           }
         }
       }
     }
 
     // everything else
-    AddTask(PHY_BVAL,CONS2PRIM);
-    if (!STS_ENABLED || pm->sts_integrator == "rkl1") {
-      AddTask(USERWORK,PHY_BVAL);
-      AddTask(NEW_DT,USERWORK);
-      if (pm->adaptive) {
-        AddTask(FLAG_AMR,USERWORK);
-        AddTask(CLEAR_ALLBND,FLAG_AMR);
+    if (!(SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS)) {
+      AddTask(PHY_BVAL,CONS2PRIM);
+      if (!STS_ENABLED || pm->sts_integrator == "rkl1") {
+        AddTask(USERWORK,PHY_BVAL);
+        AddTask(NEW_DT,USERWORK);
+        if (pm->adaptive) {
+          AddTask(FLAG_AMR,USERWORK);
+          AddTask(CLEAR_ALLBND,FLAG_AMR);
+        } else {
+          AddTask(CLEAR_ALLBND,NEW_DT);
+        }
       } else {
-        AddTask(CLEAR_ALLBND,NEW_DT);
+        AddTask(CLEAR_ALLBND,PHY_BVAL);
       }
-    } else {
-      AddTask(CLEAR_ALLBND,PHY_BVAL);
     }
   } // end of using namespace block
 }
@@ -658,6 +701,21 @@ void TimeIntegratorTaskList::StartupTaskList(MeshBlock *pmb, int stage) {
       ps->s1.ZeroClear();
       if (integrator == "ssprk5_4")
         ps->s2 = ps->s;
+    }
+    if (SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS) {
+      Gravity *pgrav = pmb->pgrav;
+      pgrav->phi0 = pgrav->phi;
+    }
+  }
+
+  if ((SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS) && (integrator != "vl2" && stage>1)) {
+    Hydro *ph = pmb->phydro;
+    Gravity *pgrav = pmb->pgrav;
+    pgrav->phi1 = pgrav->phi;
+    if (stage==2) {
+      ph->SetFluxes(ph->flux, ph->fl0);
+    } else {
+      ph->SetFluxes(ph->flux, ph->fl1);
     }
   }
 

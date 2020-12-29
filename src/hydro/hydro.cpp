@@ -95,6 +95,9 @@ Hydro::Hydro(MeshBlock *pmb, ParameterInput *pin) :
       pmb->pbval->bvars_sts.push_back(&hbvar);
     }
   }
+  if (SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS) {
+    pmb->pbval->bvars_gsrc.push_back(&hbvar);
+  }
 
   // Allocate memory for scratch arrays
   dt1_.NewAthenaArray(nc1);
@@ -129,6 +132,23 @@ Hydro::Hydro(MeshBlock *pmb, ParameterInput *pin) :
     g_.NewAthenaArray(NMETRIC, nc1);
     gi_.NewAthenaArray(NMETRIC, nc1);
     cons_.NewAthenaArray(NWAVE, nc1);
+  }
+  // for self-gravity energy source terms
+  if (SELF_GRAVITY_ENABLED && NON_BAROTROPIC_EOS) {
+    if (integrator != "vl2") {
+      fl0[X1DIR].NewAthenaArray(nc3, nc2, nc1+1);
+      if (pm->f2)
+        fl0[X2DIR].NewAthenaArray(nc3, nc2+1, nc1);
+      if (pm->f3)
+        fl0[X3DIR].NewAthenaArray(nc3+1, nc2, nc1);
+    }
+    if (integrator=="rk3") {
+      fl1[X1DIR].NewAthenaArray(nc3, nc2, nc1+1);
+      if (pm->f2)
+        fl1[X2DIR].NewAthenaArray(nc3, nc2+1, nc1);
+      if (pm->f3)
+        fl1[X3DIR].NewAthenaArray(nc3+1, nc2, nc1);
+    }
   }
   // for one-time potential calcuation and correction (old Athena)
   if (SELF_GRAVITY_ENABLED == 3) {

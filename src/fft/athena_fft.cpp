@@ -167,7 +167,7 @@ void FFTBlock::RetrieveResult(AthenaArray<Real> &dst, bool nu, int ngh,
 //  \brief Fill the source in the active zone
 
 void FFTBlock::LoadSource(const AthenaArray<Real> &src, bool nu, int ngh,
-                          LogicalLocation loc, RegionSize bsize) {
+                          LogicalLocation loc, RegionSize bsize, Real floor) {
   std::complex<Real> *dst = in_;
   int is, ie, js, je, ks, ke;
   // KGF: possible overflow from std::int64_t loc.lx1 to int is, e.g.
@@ -186,8 +186,8 @@ void FFTBlock::LoadSource(const AthenaArray<Real> &src, bool nu, int ngh,
         for (int i=ngh, mi=is; mi<=ie; i++, mi++) {
           std::int64_t idx = GetIndex(mi, mj, mk, f_in_);
           if (n == 0) {
-            // copy-list initializatio (since C++11)
-            dst[idx] = {src(n,k,j,i), 0.0};
+            // copy-list initialization (since C++11)
+            dst[idx] = {(src(n,k,j,i) > floor) ?  src(n,k,j,i) : floor, 0.0};
           } else {
             dst[idx].imag(src(n,k,j,i));
           }
